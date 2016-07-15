@@ -31,7 +31,7 @@ var addCSSRule  = function (parent, selector, body, selSep) {
         parent.addRule(v, body, pos)
       })
     }catch(e) {
-      console.log(e, selector, body)
+      // console.log(e, selector, body)
     }
   }
 
@@ -41,12 +41,18 @@ var addCSSRule  = function (parent, selector, body, selSep) {
   return omArr
 }
 
-var reWholeRule = /keyframes|page/
-
-var atomGroupRule = function(node) {
-  return !node ? false : reWholeRule.test(node.at) || node.parentRule && reWholeRule.test(node.parentRule.at)
+function getBodyCss(prop) {
+  // get cssText from prop
+  return Object.keys(prop).map(function(k) {
+    for(var v, ret='', i=prop[k].length; i--; ) {
+      v = prop[k][i]
+      ret += k.charAt(0)=='@'
+        ? dashify(k)+' '+v+';'
+        : dashify(k)+': '+v+';'
+    }
+    return ret
+  }).join('')
 }
-
 
 function cssobj_plugin_post_cssom (option) {
 
@@ -61,6 +67,16 @@ function cssobj_plugin_post_cssom (option) {
   var sheet = dom.sheet || dom.styleSheet
   window.s = sheet
 
+  // helper regexp & function
+  var reWholeRule = /keyframes|page/
+  var atomGroupRule = function(node) {
+    return !node ? false : reWholeRule.test(node.at) || node.parentRule && reWholeRule.test(node.parentRule.at)
+  }
+  var getOm = function(node) {
+    var p = node.parentRule
+    return p && ('omGroup' in p) ? p.omGroup : sheet
+  }
+
 
   return function (result) {
 
@@ -74,31 +90,19 @@ function cssobj_plugin_post_cssom (option) {
       var children = node.children
       var isGroup = node.type=='group'
 
-      var prop = node.prop
       var selText = node.selText
+      var cssText = getBodyCss(node.prop)
 
       if(atomGroupRule(node)) opt = opt || []
 
-      var parent = node.parentRule && node.parentRule.omGroup || sheet
-
-      // get cssText from prop
-      var cssText = Object.keys(prop).map(function(k) {
-        for(var v, s='', i=prop[k].length; i--; ) {
-          v = prop[k][i]
-          s += k.charAt(0)=='@'
-            ? dashify(k)+' '+v+';'
-            : dashify(k)+': '+v+';'
-        }
-        return s
-      }).join('')
 
       if(isGroup) {
-        if(!atomGroupRule(node)) node.omGroup = addCSSRule(parent, node.groupText, '{}').pop()||null
+        if(!atomGroupRule(node)) node.omGroup = addCSSRule(sheet, node.groupText, '{}').pop()||null
       }
 
       if (cssText) {
         if(!atomGroupRule(node) && (!node.parentRule || node.parentRule.omGroup!==null)){
-          node.omRule = addCSSRule(parent, selText, cssText, node.selSep)
+          node.omRule = addCSSRule(getOm(node), selText, cssText, node.selSep)
         }
         opt && opt.push( selText ? selText + ' {' + cssText +'}' : cssText )
       }
@@ -109,8 +113,8 @@ function cssobj_plugin_post_cssom (option) {
       }
 
       if(isGroup) {
-        if(atomGroupRule(node)) {
-          node.omRule = addCSSRule(parent, node.groupText, opt.join(''))
+        if(atomGroupRule(node) && getOm(node)) {
+          node.omRule = addCSSRule(getOm(node), node.groupText, opt.join(''))
           delete opt
         }
       }
@@ -122,10 +126,60 @@ function cssobj_plugin_post_cssom (option) {
 
     }
 
-    if(!result.diff){
+    if(!result.diff) {
       walk(result.root)
-    }else{
-      console.log(result.diff)
+    } else {
+
+      var diff = result.diff
+
+      if(diff.added) diff.added.forEach(function(node) {
+        walk(node)
+      })
+
+      if(diff.removed) diff.removed.forEach(function(node) {
+        node.omRule && node.omRule.forEach(function(rule) {
+          var parent = rule.parentRule || sheet
+          var rules = parent.cssRules || parent.rules
+          var index = -1
+          for(var i = 0, len = rules.length; i < len; i++) {
+            if(rules[i]===rule) {
+              index = i
+              break
+            }
+          }
+          if(index<0) return
+          parent.removeRule
+            ? parent.removeRule(index)
+            : parent.deleteRule(index)
+        })
+      })
+
+      if(diff.changed) diff.changed.forEach(function(node) {
+
+        var om = node.omRule
+        var diff = node.diff
+
+        diff.added && diff.added.forEach(function(v) {
+          om.forEach(function(rule) {
+            rule.style[v] = node.prop[v][0]
+          })
+        })
+
+        diff.changed && diff.changed.forEach(function(v) {
+          om.forEach(function(rule) {
+            rule.style[v] = node.prop[v][0]
+          })
+        })
+
+        diff.removed && diff.removed.forEach(function(v) {
+          om.forEach(function(rule) {
+            rule.style.removeProperty
+              ? rule.style.removeProperty(v)
+              : rule.style.removeAttribute(v)
+          })
+        })
+
+      })
     }
 
 
