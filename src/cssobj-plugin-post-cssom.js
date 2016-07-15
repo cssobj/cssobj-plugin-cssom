@@ -19,21 +19,23 @@ function createDOM (id, option) {
   return el
 }
 
-var addRule  = function (parent, selector, body) {
+var addCSSRule  = function (parent, selector, body, selSep) {
   var rules = parent.cssRules || parent.rules
-  var prev = rules.length
+  var pos = rules.length
   var omArr = []
   if ('insertRule' in parent) {
-    parent.insertRule(selector + '{' + body + '}', prev)
+    parent.insertRule(selector + '{' + body + '}', pos)
   } else if ('addRule' in parent) {
     try{
-      parent.addRule(selector, body, prev)
+      [].concat(selSep||selector).forEach(function(v) {
+        parent.addRule(v, body, pos)
+      })
     }catch(e) {
-      return omArr
+      console.log(e, selector, body)
     }
   }
 
-  for(var i = prev, len = rules.length; i < len; i++) {
+  for(var i = pos, len = rules.length; i < len; i++) {
     omArr.push(rules[i])
   }
   return omArr
@@ -91,11 +93,13 @@ function cssobj_plugin_post_cssom (option) {
       }).join('')
 
       if(isGroup) {
-        if(!atomGroupRule(node)) node.omGroup = addRule(parent, node.groupText, '{}').pop()||null
+        if(!atomGroupRule(node)) node.omGroup = addCSSRule(parent, node.groupText, '{}').pop()||null
       }
 
       if (cssText) {
-        if(!atomGroupRule(node) && (!node.parentRule || node.parentRule.omGroup!==null)) node.omRule = addRule(parent, selText, cssText)
+        if(!atomGroupRule(node) && (!node.parentRule || node.parentRule.omGroup!==null)){
+          node.omRule = addCSSRule(parent, selText, cssText, node.selSep)
+        }
         opt && opt.push( selText ? selText + ' {' + cssText +'}' : cssText )
       }
 
@@ -106,7 +110,7 @@ function cssobj_plugin_post_cssom (option) {
 
       if(isGroup) {
         if(atomGroupRule(node)) {
-          node.omRule = addRule(parent, node.groupText, opt.join(''))
+          node.omRule = addCSSRule(parent, node.groupText, opt.join(''))
           delete opt
         }
       }
@@ -117,7 +121,14 @@ function cssobj_plugin_post_cssom (option) {
       })
 
     }
-    walk(result.root)
+
+    if(!result.diff){
+      walk(result.root)
+    }else{
+      console.log(result.diff)
+    }
+
+
     return result
   }
 
