@@ -11,7 +11,6 @@ define('cssobj_plugin_post_cssom', function () { 'use strict';
     var el = document.createElement('style')
     document.getElementsByTagName('head')[0].appendChild(el)
     el.setAttribute('id', id)
-    el.setAttribute('type', 'text/css')
     if (option && typeof option == 'object' && option.attrs)
       for (var i in option.attrs) {
         el.setAttribute(i, option.attrs[i])
@@ -54,7 +53,7 @@ define('cssobj_plugin_post_cssom', function () { 'use strict';
         v = prop[k][i]
         ret += k.charAt(0) == '@'
           ? dashify(k) + ' ' + v + ';'
-          : dashify(k) + ': ' + v + ';'
+          : dashify(k) + ':' + v + ';'
       }
       return ret
     }).join('')
