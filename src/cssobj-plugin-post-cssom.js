@@ -168,6 +168,7 @@ export default function cssobj_plugin_post_cssom (option) {
             // first test if it's valid function
             mediaTest()
             node.mediaTest = mediaTest
+            node.mediaEnabled = mediaTest()
             mediaStore.push(node)
           } catch(e) {}
         }
