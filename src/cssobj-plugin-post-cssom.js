@@ -3,7 +3,6 @@
 function dashify(str) {
   return str
     .replace(/([A-Z])/g, function(m){return "-"+m.toLowerCase()})
-    .replace(/(^\s+|\s+$)/g, '')
 }
 
 
@@ -19,7 +18,7 @@ function createDOM (id, option) {
   return el
 }
 
-var addCSSRule  = function (parent, selector, body, selSep) {
+var addCSSRule  = function (parent, selector, body, selPart) {
   var rules = parent.cssRules || parent.rules
   var pos = rules.length
   var omArr = []
@@ -27,7 +26,7 @@ var addCSSRule  = function (parent, selector, body, selSep) {
     parent.insertRule(selector + '{' + body + '}', pos)
   } else if ('addRule' in parent) {
     try{
-      [].concat(selSep||selector).forEach(function(v) {
+      [].concat(selPart||selector).forEach(function(v) {
         parent.addRule(v, body, pos)
       })
     }catch(e) {
@@ -77,7 +76,6 @@ function cssobj_plugin_post_cssom (option) {
     return p && ('omGroup' in p) ? p.omGroup : sheet
   }
 
-
   return function (result) {
 
     var walk = function(node, opt) {
@@ -95,14 +93,13 @@ function cssobj_plugin_post_cssom (option) {
 
       if(atomGroupRule(node)) opt = opt || []
 
-
       if(isGroup) {
         if(!atomGroupRule(node)) node.omGroup = addCSSRule(sheet, node.groupText, '{}').pop()||null
       }
 
       if (cssText) {
         if(!atomGroupRule(node) && (!node.parentRule || node.parentRule.omGroup!==null)){
-          node.omRule = addCSSRule(getOm(node), selText, cssText, node.selSep)
+          node.omRule = addCSSRule(getOm(node), selText, cssText, node.selPart)
         }
         opt && opt.push( selText ? selText + ' {' + cssText +'}' : cssText )
       }
