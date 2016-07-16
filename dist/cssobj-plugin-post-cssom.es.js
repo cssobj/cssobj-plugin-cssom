@@ -51,7 +51,7 @@ function getBodyCss (prop) {
   }).join('')
 }
 
-export default function cssobj_plugin_post_cssom (option) {
+function cssobj_plugin_post_cssom (option) {
   option = option || {}
 
   if (!option.name) option.name = +new Date()
@@ -256,3 +256,5 @@ export default function cssobj_plugin_post_cssom (option) {
     return result
   }
 }
+
+export default cssobj_plugin_post_cssom;

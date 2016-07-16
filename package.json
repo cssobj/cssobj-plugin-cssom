@@ -1,0 +1,14 @@
+{
+  "name": "cssobj-plugin-post-cssom",
+  "version": "1.0.0",
+  "description": "Generate and patch style sheet into CSSOM for cssobj-core",
+  "main": "dist/cssobj-plugin-post-cssom.cjs.js",
+  "jsnext:main": "dist/cssobj-plugin-post-cssom.es.js",
+  "scripts": {
+    "test": "mocha",
+    "report": "cd dist && gzip < cssobj-plugin-post-cssom.min.js > cssobj-plugin-post-cssom.min.gz && ls -lh && rm -f *.gz",
+    "make": "rollup -c && uglifyjs dist/cssobj-plugin-post-cssom.iife.js -cm -o dist/cssobj-plugin-post-cssom.min.js"
+  },
+  "author": "James Yang <jamesyang999@gmail.com>",
+  "license": "MIT"
+}
