@@ -12,6 +12,7 @@ var cssobj_plugin_post_cssom = (function () {
     var el = document.createElement('style')
     document.getElementsByTagName('head')[0].appendChild(el)
     el.setAttribute('id', id)
+    el.setAttribute('type', 'text/css')
     if (option && typeof option == 'object' && option.attrs)
       for (var i in option.attrs) {
         el.setAttribute(i, option.attrs[i])
@@ -24,15 +25,21 @@ var cssobj_plugin_post_cssom = (function () {
     var pos = rules.length
     var omArr = []
     if ('insertRule' in parent) {
-      parent.insertRule(selector + '{' + body + '}', pos)
-    } else if ('addRule' in parent) {
       try {
-        [].concat(selPart || selector).forEach(function (v) {
-          parent.addRule(v, body, pos)
-        })
+        parent.insertRule(selector + ' {' + body + '}', pos)
       } catch(e) {
-        // console.log(e, selector, body)
+        // the rule is not supported, fail silently
+        // console.log(e, selector, body, pos)
       }
+    } else if ('addRule' in parent) {
+      // old IE addRule don't support 'dd,dl' form, add one by one
+      ![].concat(selPart||selector).forEach(function (v) {
+        try {
+          parent.addRule(v, body, pos)
+        } catch(e) {
+          // console.log(e, selector, body)
+        }
+      })
     }
 
     for (var i = pos, len = rules.length; i < len; i++) {
@@ -64,6 +71,9 @@ var cssobj_plugin_post_cssom = (function () {
 
     var dom = document.getElementById(id) || createDOM(id, option)
     var sheet = dom.sheet || dom.styleSheet
+
+    // IE has a bug, first comma rule not work! insert a dummy here
+    addCSSRule(sheet, 'html,body', '')
 
     // helper regexp & function
     var reWholeRule = /keyframes|page/i
@@ -184,7 +194,7 @@ var cssobj_plugin_post_cssom = (function () {
       // it's normal css rule
       if (cssText) {
         if (!atomGroupRule(node)) {
-          addNormalRule(node, selText, cssText, node.selPart)
+          addNormalRule(node, selText, cssText, node.selTextPart)
         }
         store && store.push(selText ? selText + ' {' + cssText + '}' : cssText)
       }
