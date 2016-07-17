@@ -1,6 +1,6 @@
 // plugin for cssobj
 
-import {dashify} from '../node_modules/cssobj-helper/dist/cssobj-helper.es.js'
+import {dashify} from '../node_modules/cssobj-helper/lib/cssobj-helper.js'
 
 function createDOM (id, option) {
   var el = document.createElement('style')
