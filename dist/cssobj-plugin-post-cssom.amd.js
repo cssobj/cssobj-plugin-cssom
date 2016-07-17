@@ -161,7 +161,7 @@ define('cssobj_plugin_post_cssom', function () { 'use strict';
         // if it's not @page, @keyframes (which is not groupRule in fact)
         if (!atomGroupRule(node)) {
           var reAdd = 'omGroup' in node
-          node.omGroup = addCSSRule(sheet, sugar(node.groupText), '{}').pop() || null
+          node.omGroup = addCSSRule(sheet, sugar(node.groupText).replace(/([0-9.]+)\s*\)/g, '$1px)'), '{}').pop() || null
 
           // when add media rule failed, build test function then check on window.resize
           if (node.at == 'media' && !reAdd && !node.omGroup) {
@@ -171,7 +171,7 @@ define('cssobj_plugin_post_cssom', function () { 'use strict';
                 .replace(/@media\s*/i, '')
                 .replace(/min-width:/ig, '>=')
                 .replace(/max-width:/ig, '<=')
-                .replace(/px\s*\)/ig, ')')
+                .replace(/(px)?\s*\)/ig, ')')
                 .replace(/\s+and\s+/ig, '&&')
                 .replace(/,/g, '||')
                 .replace(/\(/g, '(document.documentElement.offsetWidth')
