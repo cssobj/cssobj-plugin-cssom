@@ -10,5 +10,8 @@
     "make": "rollup -c && uglifyjs dist/cssobj-plugin-post-cssom.iife.js -cm -o dist/cssobj-plugin-post-cssom.min.js"
   },
   "author": "James Yang <jamesyang999@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cssobj-helper": "github:cssobj/cssobj-helper"
+  }
 }

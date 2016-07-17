@@ -1,9 +1,6 @@
 // plugin for cssobj
 
-function dashify (str) {
-  return str
-    .replace(/([A-Z])/g, function (m) {return '-' + m.toLowerCase()})
-}
+import {dashify} from '../node_modules/cssobj-helper/dist/cssobj-helper.es.js'
 
 function createDOM (id, option) {
   var el = document.createElement('style')

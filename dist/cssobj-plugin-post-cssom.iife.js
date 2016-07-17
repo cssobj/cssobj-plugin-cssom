@@ -1,11 +1,13 @@
 var cssobj_plugin_post_cssom = (function () {
   'use strict';
 
-  // plugin for cssobj
+  // helper functions for cssobj
 
-  function dashify (str) {
-    return str
-      .replace(/([A-Z])/g, function (m) {return '-' + m.toLowerCase()})
+  // convert js prop into css prop (dashified)
+  function dashify(str) {
+    return str.replace(/[A-Z]/g, function(m) {
+      return '-' + m.toLowerCase()
+    })
   }
 
   function createDOM (id, option) {
