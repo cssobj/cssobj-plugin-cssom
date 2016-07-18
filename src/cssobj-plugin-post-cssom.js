@@ -160,14 +160,14 @@ export default function cssobj_plugin_post_cssom (option) {
         if (node.at == 'media' && !reAdd && !node.omGroup) {
           // build test function from @media rule
           var mediaTest = new Function(
-            'return ' + node.groupText
+            'return ' + sugar(node.groupText)
               .replace(/@media\s*/i, '')
               .replace(/min-width:/ig, '>=')
               .replace(/max-width:/ig, '<=')
               .replace(/(px)?\s*\)/ig, ')')
               .replace(/\s+and\s+/ig, '&&')
               .replace(/,/g, '||')
-              .replace(/\(\s*w\s*([^a-z])/ig, '(document.documentElement.offsetWidth$1')
+              .replace(/\(/g, '(document.documentElement.offsetWidth')
           )
 
           try {
