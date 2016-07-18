@@ -89,8 +89,8 @@ var cssobj_plugin_post_cssom = (function () {
 
     var sugar = function (str) {
       return option.noSugar ? str : str
-        .replace(/>=/g, 'min-width:')
-        .replace(/<=/g, 'max-width:')
+        .replace(/w\s*>=/ig, 'min-width:')
+        .replace(/w\s*<=/ig, 'max-width:')
     }
 
     var validParent = function (node) {
@@ -175,7 +175,7 @@ var cssobj_plugin_post_cssom = (function () {
                 .replace(/(px)?\s*\)/ig, ')')
                 .replace(/\s+and\s+/ig, '&&')
                 .replace(/,/g, '||')
-                .replace(/\(/g, '(document.documentElement.offsetWidth')
+                .replace(/\(\s*w\s*([^a-z])/ig, '(document.documentElement.offsetWidth$1')
             )
 
             try {
@@ -221,6 +221,7 @@ var cssobj_plugin_post_cssom = (function () {
     }
 
     return function (result) {
+      result.cssdom = dom
       if (!result.diff) {
         // it's first time render
         walk(result.root)
