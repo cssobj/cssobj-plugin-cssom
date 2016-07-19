@@ -96,23 +96,21 @@ function cssobj_plugin_post_cssom (option) {
     return !node.parentRule || node.parentRule.omGroup !== null
   }
 
-  var removeRule = function (node) {
-    node.omRule && node.omRule.forEach(function (rule) {
-      var parent = rule.parentRule || sheet
-      var rules = parent.cssRules || parent.rules
-      var index = -1
-      for (var i = 0, len = rules.length; i < len; i++) {
-        if (rules[i] === rule) {
-          index = i
-          break
-        }
+  var removeOneRule = function (rule) {
+    if(!rule) return
+    var parent = rule.parentRule || sheet
+    var rules = parent.cssRules || parent.rules
+    var index = -1
+    for (var i = 0, len = rules.length; i < len; i++) {
+      if (rules[i] === rule) {
+        index = i
+        break
       }
-      if (index < 0) return
-      parent.removeRule
-        ? parent.removeRule(index)
-        : parent.deleteRule(index)
-    })
-    delete node.omRule
+    }
+    if (index < 0) return
+    parent.removeRule
+      ? parent.removeRule(index)
+      : parent.deleteRule(index)
   }
 
   // helper function for addNormalrule
@@ -125,7 +123,8 @@ function cssobj_plugin_post_cssom (option) {
       if (node.parentRule.mediaEnabled) {
         if (!node.omRule) node.omRule = addCSSRule(parent, selText, cssText, selPart)
       }else if (node.omRule) {
-        removeRule(node)
+        node.omRule.forEach(removeOneRule)
+        delete node.omRule
       }
     }
   }
@@ -235,7 +234,13 @@ function cssobj_plugin_post_cssom (option) {
 
       // node removed
       if (diff.removed) diff.removed.forEach(function (node) {
-        removeRule(node)
+
+        [node.omGroup].concat(node.omRule).forEach(removeOneRule)
+
+        node.childSel && node.childSel.forEach(function(n) {
+          [n.omGroup].concat(n.omRule).forEach(removeOneRule)
+        })
+
       })
 
       // node changed, find which part should be patched
