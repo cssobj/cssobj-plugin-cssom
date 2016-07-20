@@ -10,6 +10,15 @@ var cssobj_plugin_post_cssom = (function () {
     })
   }
 
+  // random string, should used across all cssobj plugins
+  var random = (function () {
+    var count = 0
+    return function () {
+      count++
+      return '_' + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
+    }
+  })()
+
   function createDOM (id, option) {
     var el = document.createElement('style')
     document.getElementsByTagName('head')[0].appendChild(el)
@@ -34,7 +43,7 @@ var cssobj_plugin_post_cssom = (function () {
       }
     } else if ('addRule' in parent) {
       // old IE addRule don't support 'dd,dl' form, add one by one
-      ![].concat(selPart||selector).forEach(function (v) {
+      ![].concat(selPart || selector).forEach(function (v) {
         try {
           parent.addRule(v, body, pos)
         } catch(e) {
@@ -65,10 +74,10 @@ var cssobj_plugin_post_cssom = (function () {
   function cssobj_plugin_post_cssom (option) {
     option = option || {}
 
-    if (!option.name) option.name = +new Date()
+    if (!option.name) option.name = random()
     option.name += ''
 
-    var id = 'style_cssobj_' + option.name.replace(/[^a-zA-Z0-9$_]/g, '')
+    var id = 'style_cssobj' + option.name.replace(/[^a-zA-Z0-9$_]/g, '')
 
     var dom = document.getElementById(id) || createDOM(id, option)
     var sheet = dom.sheet || dom.styleSheet
@@ -98,7 +107,7 @@ var cssobj_plugin_post_cssom = (function () {
     }
 
     var removeOneRule = function (rule) {
-      if(!rule) return
+      if (!rule) return
       var parent = rule.parentRule || sheet
       var rules = parent.cssRules || parent.rules
       var index = -1
@@ -114,6 +123,20 @@ var cssobj_plugin_post_cssom = (function () {
         : parent.deleteRule(index)
     }
 
+    function removeNode (node) {
+      // remove mediaStore for old IE
+      var groupIdx = mediaStore.indexOf(node)
+      if (groupIdx > -1) {
+        // before remove from mediaStore
+        // don't forget to remove all children, by a walk
+        node.mediaEnabled = false
+        walk(node)
+        mediaStore.splice(groupIdx, 1)
+      }
+      // remove Group rule and Nomal rule
+      ![node.omGroup].concat(node.omRule).forEach(removeOneRule)
+    }
+
     // helper function for addNormalrule
     var addNormalRule = function (node, selText, cssText, selPart) {
       // get parent to add
@@ -121,6 +144,7 @@ var cssobj_plugin_post_cssom = (function () {
       if (validParent(node))
         node.omRule = addCSSRule(parent, selText, cssText, selPart)
       else if (node.parentRule) {
+        // for old IE not support @media, check mediaEnabled, add child nodes
         if (node.parentRule.mediaEnabled) {
           if (!node.omRule) node.omRule = addCSSRule(parent, selText, cssText, selPart)
         }else if (node.omRule) {
@@ -235,13 +259,9 @@ var cssobj_plugin_post_cssom = (function () {
 
         // node removed
         if (diff.removed) diff.removed.forEach(function (node) {
-
-          [node.omGroup].concat(node.omRule).forEach(removeOneRule)
-
-          node.childSel && node.childSel.forEach(function(n) {
-            [n.omGroup].concat(n.omRule).forEach(removeOneRule)
-          })
-
+          // also remove all child group & sel
+          node.childSel && node.childSel.forEach(removeNode)
+          removeNode(node)
         })
 
         // node changed, find which part should be patched
