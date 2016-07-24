@@ -243,7 +243,7 @@ export default function cssobj_plugin_post_cssom (option) {
       // node removed
       if (diff.removed) diff.removed.forEach(function (node) {
         // also remove all child group & sel
-        node.childSel && node.childSel.forEach(removeNode)
+        node.selChild && node.selChild.forEach(removeNode)
         removeNode(node)
       })
 
