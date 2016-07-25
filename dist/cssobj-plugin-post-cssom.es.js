@@ -1,5 +1,3 @@
-// helper functions for cssobj
-
 // convert js prop into css prop (dashified)
 function dashify(str) {
   return str.replace(/[A-Z]/g, function(m) {
@@ -89,7 +87,7 @@ function cssobj_plugin_post_cssom (option) {
   }
 
   var getParent = function (node) {
-    var p = node.parentRule
+    var p = 'omGroup' in node ? node : node.parentRule
     return p && p.omGroup || sheet
   }
 
@@ -136,6 +134,7 @@ function cssobj_plugin_post_cssom (option) {
 
   // helper function for addNormalrule
   var addNormalRule = function (node, selText, cssText, selPart) {
+    if(!cssText) return
     // get parent to add
     var parent = getParent(node)
     if (validParent(node))
@@ -172,7 +171,14 @@ function cssobj_plugin_post_cssom (option) {
     // cssobj generate vanilla Array, it's safe to use constructor, fast
     if (node.constructor === Array) return node.map(function (v) {walk(v, store)})
 
-    var postArr = []
+    // nested media rule will pending proceed
+    if(node.at=='media' && node.selParent && !node.pending) {
+      node.pending=true
+      return node.selParent.postArr.push(node)
+    }
+    delete node.pending
+
+    node.postArr = []
     var children = node.children
     var isGroup = node.type == 'group'
 
@@ -221,8 +227,8 @@ function cssobj_plugin_post_cssom (option) {
     }
 
     for (var c in children) {
-      // emtpy key rule and media rule should add in top level, walk later
-      if (c === '' || children[c].at == 'media') postArr.push(c)
+      // empty key will pending proceed
+      if (c === '') node.postArr.push(children[c])
       else walk(children[c], store)
     }
 
@@ -235,8 +241,8 @@ function cssobj_plugin_post_cssom (option) {
     }
 
     // media rules need a stand alone block
-    postArr.map(function (v) {
-      walk(children[v], store)
+    node.postArr.map(function (v) {
+      walk(v, store)
     })
   }
 

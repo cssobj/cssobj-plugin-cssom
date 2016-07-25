@@ -1,6 +1,6 @@
 // plugin for cssobj
 
-import { dashify, random } from '../node_modules/cssobj-helper/lib/cssobj-helper.js'
+import { dashify, random } from '../../cssobj-helper/lib/cssobj-helper.js'
 
 function createDOM (id, option) {
   var el = document.createElement('style')
@@ -75,7 +75,7 @@ export default function cssobj_plugin_post_cssom (option) {
   }
 
   var getParent = function (node) {
-    var p = node.parentRule
+    var p = 'omGroup' in node ? node : node.parentRule
     return p && p.omGroup || sheet
   }
 
@@ -122,6 +122,7 @@ export default function cssobj_plugin_post_cssom (option) {
 
   // helper function for addNormalrule
   var addNormalRule = function (node, selText, cssText, selPart) {
+    if(!cssText) return
     // get parent to add
     var parent = getParent(node)
     if (validParent(node))
@@ -158,7 +159,14 @@ export default function cssobj_plugin_post_cssom (option) {
     // cssobj generate vanilla Array, it's safe to use constructor, fast
     if (node.constructor === Array) return node.map(function (v) {walk(v, store)})
 
-    var postArr = []
+    // nested media rule will pending proceed
+    if(node.at=='media' && node.selParent && !node.pending) {
+      node.pending=true
+      return node.selParent.postArr.push(node)
+    }
+    delete node.pending
+
+    node.postArr = []
     var children = node.children
     var isGroup = node.type == 'group'
 
@@ -207,8 +215,8 @@ export default function cssobj_plugin_post_cssom (option) {
     }
 
     for (var c in children) {
-      // emtpy key rule and media rule should add in top level, walk later
-      if (c === '' || children[c].at == 'media') postArr.push(c)
+      // empty key will pending proceed
+      if (c === '') node.postArr.push(children[c])
       else walk(children[c], store)
     }
 
@@ -221,8 +229,8 @@ export default function cssobj_plugin_post_cssom (option) {
     }
 
     // media rules need a stand alone block
-    postArr.map(function (v) {
-      walk(children[v], store)
+    node.postArr.map(function (v) {
+      walk(v, store)
     })
   }
 
