@@ -174,12 +174,11 @@ var cssobj_plugin_post_cssom = (function () {
       // cssobj generate vanilla Array, it's safe to use constructor, fast
       if (node.constructor === Array) return node.map(function (v) {walk(v, store)})
 
+
       // nested media rule will pending proceed
-      if(node.at=='media' && node.selParent && !node.pending) {
-        node.pending=true
+      if(node.at=='media' && node.selParent && node.selParent.postArr) {
         return node.selParent.postArr.push(node)
       }
-      delete node.pending
 
       node.postArr = []
       var children = node.children
@@ -244,7 +243,9 @@ var cssobj_plugin_post_cssom = (function () {
       }
 
       // media rules need a stand alone block
-      node.postArr.map(function (v) {
+      var postArr = node.postArr
+      delete node.postArr
+      postArr.map(function (v) {
         walk(v, store)
       })
     }
