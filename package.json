@@ -9,6 +9,14 @@
     "report": "cd dist && gzip < cssobj-plugin-post-cssom.min.js > cssobj-plugin-post-cssom.min.gz && ls -lh && rm -f *.gz",
     "make": "rollup -c && uglifyjs dist/cssobj-plugin-post-cssom.iife.js -cm -o dist/cssobj-plugin-post-cssom.min.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssobj/cssobj-plugin-post-cssom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cssobj/cssobj-plugin-post-cssom/issues"
+  },
+  "homepage": "https://github.com/cssobj/cssobj-plugin-post-cssom#readme",
   "author": "James Yang <jamesyang999@gmail.com>",
   "license": "MIT",
   "dependencies": {
