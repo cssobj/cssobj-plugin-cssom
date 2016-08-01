@@ -1,13 +1,13 @@
 {
   "name": "cssobj-plugin-post-cssom",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate and patch style sheet into CSSOM for cssobj-core",
   "main": "dist/cssobj-plugin-post-cssom.cjs.js",
   "jsnext:main": "dist/cssobj-plugin-post-cssom.es.js",
   "scripts": {
     "test": "mocha",
     "report": "cd dist && gzip < cssobj-plugin-post-cssom.min.js > cssobj-plugin-post-cssom.min.gz && ls -lh && rm -f *.gz",
-    "make": "rollup -c && uglifyjs dist/cssobj-plugin-post-cssom.iife.js -cm -o dist/cssobj-plugin-post-cssom.min.js"
+    "make": "rollup -c && uglifyjs dist/cssobj-plugin-post-cssom.iife.js -cm -o dist/cssobj-plugin-post-cssom.min.js && gulp bump"
   },
   "repository": {
     "type": "git",
@@ -21,5 +21,9 @@
   "license": "MIT",
   "dependencies": {
     "cssobj-helper": "github:cssobj/cssobj-helper"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-bump": "^2.2.0"
   }
 }
