@@ -5,6 +5,11 @@ function dashify(str) {
   })
 }
 
+// capitalize str
+function capitalize (str) {
+  return str.charAt(0).toUpperCase() + str.substr(1)
+}
+
 // random string, should used across all cssobj plugins
 var random = (function () {
   var count = 0
@@ -65,6 +70,26 @@ function getBodyCss (prop) {
     return ret
   }).join('')
 }
+
+// vendor prefix support
+var styleList = document.createElement('p').style
+
+var vendorPrefix = (function getPrefix() {
+  var pre = Object.keys(styleList)
+    .join(',')
+    .match(/,(moz|webkit|ms|o)[A-Z]/)
+  return pre ? pre[1] : ''
+})()
+
+// apply prop to get right vendor prefix
+function prefixProp (name, cap) {
+  // js prop is lowerCase
+  // css need cap prefix capitalized
+  return name in styleList
+    ? name
+    : vendorPrefix ? (cap? capitalize(vendorPrefix) : vendorPrefix) + capitalize(name) : name
+}
+
 
 function cssobj_plugin_post_cssom (option) {
   option = option || {}
@@ -276,6 +301,7 @@ function cssobj_plugin_post_cssom (option) {
 
         // added have same action as changed, can be merged... just for clarity
         diff.added && diff.added.forEach(function (v) {
+          v = prefixProp(v)
           om && om.forEach(function (rule) {
             try{
               rule.style[v] = node.prop[v][0]
@@ -284,6 +310,7 @@ function cssobj_plugin_post_cssom (option) {
         })
 
         diff.changed && diff.changed.forEach(function (v) {
+          v = prefixProp(v)
           om && om.forEach(function (rule) {
             try{
               rule.style[v] = node.prop[v][0]
@@ -292,6 +319,7 @@ function cssobj_plugin_post_cssom (option) {
         })
 
         diff.removed && diff.removed.forEach(function (v) {
+          v = prefixProp(v)
           om && om.forEach(function (rule) {
             rule.style.removeProperty
               ? rule.style.removeProperty(v)
