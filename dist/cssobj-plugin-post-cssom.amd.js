@@ -67,7 +67,7 @@ define('cssobj_plugin_post_cssom', function () { 'use strict';
         v = prop[k][i]
         ret += k.charAt(0) == '@'
           ? dashify(k) + ' ' + v + ';'
-          : dashify(k) + ':' + v + ';'
+          : dashify(prefixProp(k, true)) + ':' + v + ';'
       }
       return ret
     }).join('')
@@ -303,29 +303,29 @@ define('cssobj_plugin_post_cssom', function () { 'use strict';
 
           // added have same action as changed, can be merged... just for clarity
           diff.added && diff.added.forEach(function (v) {
-            v = prefixProp(v)
+            var prefixV = prefixProp(v)
             om && om.forEach(function (rule) {
               try{
-                rule.style[v] = node.prop[v][0]
+                rule.style[prefixV] = node.prop[v][0]
               }catch(e){}
             })
           })
 
           diff.changed && diff.changed.forEach(function (v) {
-            v = prefixProp(v)
+            var prefixV = prefixProp(v)
             om && om.forEach(function (rule) {
               try{
-                rule.style[v] = node.prop[v][0]
+                rule.style[prefixV] = node.prop[v][0]
               }catch(e){}
             })
           })
 
           diff.removed && diff.removed.forEach(function (v) {
-            v = prefixProp(v)
+            var prefixV = prefixProp(v)
             om && om.forEach(function (rule) {
               rule.style.removeProperty
-                ? rule.style.removeProperty(v)
-                : rule.style.removeAttribute(v)
+                ? rule.style.removeProperty(prefixV)
+                : rule.style.removeAttribute(prefixV)
             })
           })
         })
