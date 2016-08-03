@@ -86,6 +86,9 @@ var vendorPrefix = (function getPrefix() {
 
 // apply prop to get right vendor prefix
 function prefixProp (name, cap) {
+  // float in old browser is SEPCIAL
+  if(name=='float') return styleList.cssFloat && 'cssFloat' || styleList.styleFloat && 'styleFloat' || 'float'
+
   // js prop is lowerCase
   // css need cap prefix capitalized
   return name in styleList
