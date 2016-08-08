@@ -71,8 +71,9 @@ var cssobj_plugin_post_cssom = (function () {
               index = parent.addImport(text[2])
               omArr.push(parent.imports[index])
             } else if (!/^\s*@/.test(node.key)) {
-              index = parent.addRule(sel, text[2], rules.length)
-              omArr.push(rules[index])
+              parent.addRule(sel, text[2], rules.length)
+              // old IE have bug: addRule will always return -1!!!
+              omArr.push(rules[rules.length-1])
             }
           } catch(e) {
             // console.log(e, selector, body)
