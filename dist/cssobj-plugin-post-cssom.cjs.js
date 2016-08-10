@@ -99,6 +99,8 @@ function getBodyCss (node) {
   // get cssText from prop
   var prop = node.prop
   return Object.keys(prop).map(function (k) {
+    // skip $prop, e.g. $id, $order
+    if(k.charAt(0)=='$') return ''
     for (var v, ret='', i = prop[k].length; i--;) {
       v = prop[k][i]
 
@@ -153,12 +155,14 @@ function vendorPropName( name ) {
 // apply prop to get right vendor prefix
 // cap=0 for no cap; cap=1 for capitalize prefix
 function prefixProp (name, inCSS) {
+  // $prop will skip
+  if(name.charAt(0)=='$') return ''
   // find name and cache the name for next time use
   var retName = cssProps[ name ] ||
       ( cssProps[ name ] = vendorPropName( name ) || name)
   return inCSS   // if hasPrefix in prop
-    ? cssPrefixesReg.test(retName) ? capitalize(retName) : name=='float' && name || retName  // fix float in CSS, avoid return cssFloat
-  : retName
+      ? cssPrefixesReg.test(retName) ? capitalize(retName) : name=='float' && name || retName  // fix float in CSS, avoid return cssFloat
+      : retName
 }
 
 
@@ -267,6 +271,8 @@ function cssobj_plugin_post_cssom (option) {
     // cssobj generate vanilla Array, it's safe to use constructor, fast
     if (node.constructor === Array) return node.map(function (v) {walk(v, store)})
 
+    // skip $key node
+    if(node.key && node.key.charAt(0)=='$') return
 
     // nested media rule will pending proceed
     if(node.at=='media' && node.selParent && node.selParent.postArr) {
@@ -382,7 +388,7 @@ function cssobj_plugin_post_cssom (option) {
         // added have same action as changed, can be merged... just for clarity
         diff.added && diff.added.forEach(function (v) {
           var prefixV = prefixProp(v)
-          om && om.forEach(function (rule) {
+          prefixV && om && om.forEach(function (rule) {
             try{
               rule.style[prefixV] = node.prop[v][0]
             }catch(e){}
@@ -391,7 +397,7 @@ function cssobj_plugin_post_cssom (option) {
 
         diff.changed && diff.changed.forEach(function (v) {
           var prefixV = prefixProp(v)
-          om && om.forEach(function (rule) {
+          prefixV && om && om.forEach(function (rule) {
             try{
               rule.style[prefixV] = node.prop[v][0]
             }catch(e){}
@@ -400,7 +406,7 @@ function cssobj_plugin_post_cssom (option) {
 
         diff.removed && diff.removed.forEach(function (v) {
           var prefixV = prefixProp(v)
-          om && om.forEach(function (rule) {
+          prefixV && om && om.forEach(function (rule) {
             try{
               rule.style.removeProperty
                 ? rule.style.removeProperty(prefixV)
