@@ -1,6 +1,6 @@
 {
   "name": "cssobj-plugin-post-cssom",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Generate and patch style sheet into CSSOM for cssobj-core",
   "main": "dist/cssobj-plugin-post-cssom.cjs.js",
   "jsnext:main": "dist/cssobj-plugin-post-cssom.es.js",

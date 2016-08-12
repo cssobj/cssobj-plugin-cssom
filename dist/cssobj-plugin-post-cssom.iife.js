@@ -69,7 +69,8 @@ var cssobj_plugin_post_cssom = (function () {
         // https://msdn.microsoft.com/en-us/library/hh781508(v=vs.85).aspx
         // only supported @rule will accept: @import
         // old IE addRule don't support 'dd,dl' form, add one by one
-        ![].concat(node.selTextPart || selector).forEach(function (sel) {
+        // selector normally is node.selTextPart, but have to be array type
+        ![].concat(selector).forEach(function (sel) {
           try {
             // remove ALL @-rule support for old IE
             if(isImportRule) {
@@ -325,11 +326,11 @@ var cssobj_plugin_post_cssom = (function () {
         }
       }
 
-      var selText = node.selText
+      var selText = node.selTextPart
       var cssText = getBodyCss(node)
 
       // it's normal css rule
-      if (cssText.length) {
+      if (cssText.join('')) {
         if (!atomGroupRule(node)) {
           addNormalRule(node, selText, cssText)
         }
@@ -384,7 +385,7 @@ var cssobj_plugin_post_cssom = (function () {
           var om = node.omRule
           var diff = node.diff
 
-          if (!om) om = addNormalRule(node, node.selText, getBodyCss(node))
+          if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node))
 
           // added have same action as changed, can be merged... just for clarity
           diff.added && diff.added.forEach(function (v) {
