@@ -1,4 +1,4 @@
-var cssobj_plugin_post_cssom = (function () {
+var cssobj_plugin_cssom = (function () {
   'use strict';
 
   // convert js prop into css prop (dashified)

@@ -1,4 +1,4 @@
-define('cssobj_plugin_post_cssom', function () { 'use strict';
+define('cssobj_plugin_cssom', function () { 'use strict';
 
   // convert js prop into css prop (dashified)
   function dashify(str) {

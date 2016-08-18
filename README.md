@@ -1,4 +1,4 @@
-# cssobj-plugin-post-cssom
+# cssobj-plugin-cssom
 
 Apply cssobj Virtual CSS into browser's [CSSOM](https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model).
 
@@ -8,8 +8,8 @@ This plugin already integrated into [cssobj](https://github.com/cssobj/cssobj), 
 
 ``` javascript
 var cssobj_core = require('cssobj-core')
-var pluginCSSOM = require('cssobj-plugin-post-cssom')
-var cssobj = cssobj_core({plugins: {post: pluginCSSOM(option) }})
+var pluginCSSOM = require('cssobj-plugin-cssom')
+var cssobj = cssobj_core({plugins: [pluginCSSOM(option)] })
 cssobj(obj)
 
 // cssobj will auto applied into <head>
@@ -18,7 +18,7 @@ cssobj(obj)
 ## Install
 
 ``` javascript
-npm install cssobj/cssobj-plugin-post-cssom
+npm install cssobj/cssobj-plugin-cssom
 ```
 
 ## API
@@ -37,7 +37,7 @@ Get plugin function to apply, pass option.
 
 ### *RETURN*
 
-A function can be as cssobj post plugin.
+A function can be as cssobj plugin.
 
 
 ## Example
@@ -51,7 +51,7 @@ pluginCSSOM({name:'index-page-style', attrs:{type:'text/css', media:'screen'} })
 
 ## Helpers
 
-This plugin can use with [plugin-csstext](https://github.com/cssobj/cssobj-plugin-post-csstext) to display cssText from generated CSSOM.
+This plugin can use with [plugin-csstext](https://github.com/cssobj/cssobj-plugin-csstext) to display cssText from generated CSSOM.
 
 
 
