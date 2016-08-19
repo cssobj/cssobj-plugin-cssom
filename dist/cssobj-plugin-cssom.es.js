@@ -271,7 +271,7 @@ function cssobj_plugin_post_cssom (option) {
     if (node.constructor === Array) return node.map(function (v) {walk(v, store)})
 
     // skip $key node
-    if(node.key && node.key.charAt(0)=='$') return
+    if(node.key && node.key.charAt(0)=='$' || !node.prop) return
 
     // nested media rule will pending proceed
     if(node.at=='media' && node.selParent && node.selParent.postArr) {
@@ -356,67 +356,69 @@ function cssobj_plugin_post_cssom (option) {
     })
   }
 
-  return function (result) {
-    result.cssdom = dom
-    if (!result.diff) {
-      // it's first time render
-      walk(result.root)
-    } else {
-      // it's not first time, patch the diff result to CSSOM
-      var diff = result.diff
+  return {
+    post: function (result) {
+      result.cssdom = dom
+      if (!result.diff) {
+        // it's first time render
+        walk(result.root)
+      } else {
+        // it's not first time, patch the diff result to CSSOM
+        var diff = result.diff
 
-      // node added
-      if (diff.added) diff.added.forEach(function (node) {
-        walk(node)
-      })
-
-      // node removed
-      if (diff.removed) diff.removed.forEach(function (node) {
-        // also remove all child group & sel
-        node.selChild && node.selChild.forEach(removeNode)
-        removeNode(node)
-      })
-
-      // node changed, find which part should be patched
-      if (diff.changed) diff.changed.forEach(function (node) {
-        var om = node.omRule
-        var diff = node.diff
-
-        if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node))
-
-        // added have same action as changed, can be merged... just for clarity
-        diff.added && diff.added.forEach(function (v) {
-          var prefixV = prefixProp(v)
-          prefixV && om && om.forEach(function (rule) {
-            try{
-              rule.style[prefixV] = node.prop[v][0]
-            }catch(e){}
-          })
+        // node added
+        if (diff.added) diff.added.forEach(function (node) {
+          walk(node)
         })
 
-        diff.changed && diff.changed.forEach(function (v) {
-          var prefixV = prefixProp(v)
-          prefixV && om && om.forEach(function (rule) {
-            try{
-              rule.style[prefixV] = node.prop[v][0]
-            }catch(e){}
-          })
+        // node removed
+        if (diff.removed) diff.removed.forEach(function (node) {
+          // also remove all child group & sel
+          node.selChild && node.selChild.forEach(removeNode)
+          removeNode(node)
         })
 
-        diff.removed && diff.removed.forEach(function (v) {
-          var prefixV = prefixProp(v)
-          prefixV && om && om.forEach(function (rule) {
-            try{
-              rule.style.removeProperty
-                ? rule.style.removeProperty(prefixV)
-                : rule.style.removeAttribute(prefixV)
-            }catch(e){}
+        // node changed, find which part should be patched
+        if (diff.changed) diff.changed.forEach(function (node) {
+          var om = node.omRule
+          var diff = node.diff
+
+          if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node))
+
+          // added have same action as changed, can be merged... just for clarity
+          diff.added && diff.added.forEach(function (v) {
+            var prefixV = prefixProp(v)
+            prefixV && om && om.forEach(function (rule) {
+              try{
+                rule.style[prefixV] = node.prop[v][0]
+              }catch(e){}
+            })
+          })
+
+          diff.changed && diff.changed.forEach(function (v) {
+            var prefixV = prefixProp(v)
+            prefixV && om && om.forEach(function (rule) {
+              try{
+                rule.style[prefixV] = node.prop[v][0]
+              }catch(e){}
+            })
+          })
+
+          diff.removed && diff.removed.forEach(function (v) {
+            var prefixV = prefixProp(v)
+            prefixV && om && om.forEach(function (rule) {
+              try{
+                rule.style.removeProperty
+                  ? rule.style.removeProperty(prefixV)
+                  : rule.style.removeAttribute(prefixV)
+              }catch(e){}
+            })
           })
         })
-      })
+      }
+
+      return result
     }
-
-    return result
   }
 }
 
