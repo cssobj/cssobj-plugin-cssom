@@ -146,7 +146,7 @@ define('cssobj_plugin_cssom', function () { 'use strict';
 
     // shortcut for names that are not vendor prefixed
     // when name already have '-' as first char, don't prefix
-    if ( name in emptyStyle || name.charAt(0)=='-' ) return
+    if ( name in emptyStyle ) return
 
     // check for vendor prefixed names
     var preName, capName = capitalize(name)
