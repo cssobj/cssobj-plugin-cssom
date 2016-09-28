@@ -107,14 +107,14 @@ define('cssobj_plugin_cssom', function () { 'use strict';
       for (var v, ret='', i = prop[k].length; i--;) {
         v = prop[k][i]
 
+        /** Below feature moved into plugin-flexbox **/
         // display:flex expand for vendor prefix
-        var vArr = k=='display' && v=='flex'
-          ? ['-webkit-box', '-ms-flexbox', '-webkit-flex', 'flex']
-          : [v]
+        // var valueArr = k=='display' && v=='flex'
+        //   ? ['-webkit-box', '-ms-flexbox', '-webkit-flex', 'flex']
+        //   : [v]
 
-        ret += vArr.map(function(v2) {
-          return node.inline ? k : dashify(prefixProp(k, true)) + ':' + v2 + ';'
-        }).join('')
+        // all value expand should be done as value function/plugin in cssobj-core >=0.5.0
+        ret += node.inline ? k : dashify(prefixProp(k, true)) + ':' + v + ';'
       }
       return ret
     })
@@ -134,8 +134,10 @@ define('cssobj_plugin_cssom', function () { 'use strict';
   // cache cssProps
   var	cssProps = {
     // normalize float css property
-    'float': testProp(['styleFloat', 'cssFloat', 'float']),
-    'flex': testProp(['WebkitBoxFlex', 'msFlex', 'WebkitFlex', 'flex'])
+    'float': testProp(['styleFloat', 'cssFloat', 'float'])
+
+    // flex expand feature will move into plugin-flexbox
+    // 'flex': testProp(['WebkitBoxFlex', 'msFlex', 'WebkitFlex', 'flex'])
   }
 
 
@@ -143,10 +145,11 @@ define('cssobj_plugin_cssom', function () { 'use strict';
   function vendorPropName( name ) {
 
     // shortcut for names that are not vendor prefixed
-    if ( name in emptyStyle ) return
+    // when name already have '-' as first char, don't prefix
+    if ( name in emptyStyle || name.charAt(0)=='-' ) return
 
     // check for vendor prefixed names
-    var preName, capName = name.charAt( 0 ).toUpperCase() + name.slice( 1 )
+    var preName, capName = capitalize(name)
     var i = cssPrefixes.length
 
     while ( i-- ) {
