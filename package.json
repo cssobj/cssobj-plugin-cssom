@@ -5,7 +5,7 @@
   "main": "dist/cssobj-plugin-cssom.cjs.js",
   "jsnext:main": "dist/cssobj-plugin-cssom.es.js",
   "scripts": {
-    "test": "mocha",
+    "test": "npm run build && mocha",
     "report": "cd dist && gzip < cssobj-plugin-cssom.min.js > cssobj-plugin-cssom.min.gz && ls -lh && rm -f *.gz",
     "build": "git rev-parse HEAD > .commithash && rollup -c && uglifyjs dist/cssobj-plugin-cssom.iife.js -cm -o dist/cssobj-plugin-cssom.min.js",
     "make": "gulp bump && npm run build"
