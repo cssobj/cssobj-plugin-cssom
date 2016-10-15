@@ -108,13 +108,7 @@ var cssobj_plugin_cssom = (function () {
       for (var v, ret='', i = prop[k].length; i--;) {
         v = prop[k][i]
 
-        /** Below feature moved into plugin-flexbox **/
-        // display:flex expand for vendor prefix
-        // var valueArr = k=='display' && v=='flex'
-        //   ? ['-webkit-box', '-ms-flexbox', '-webkit-flex', 'flex']
-        //   : [v]
-
-        // all value expand should be done as value function/plugin in cssobj-core >=0.5.0
+        // value expand & merge should be done as value function/plugin in cssobj-core >=0.5.0
         ret += node.inline ? k : dashify(prefixProp(k, true)) + ':' + v + ';'
       }
       return ret
@@ -132,13 +126,16 @@ var cssobj_plugin_cssom = (function () {
     }
   }
 
-  // cache cssProps
+  //
+  /**
+   * cache cssProps
+   * the value is JS format, will be used:
+   * 1. diff & patch properties for CSSOM
+   * 2. vendorPrefix property name checking
+   */
   var	cssProps = {
     // normalize float css property
     'float': testProp(['styleFloat', 'cssFloat', 'float'])
-
-    // flex expand feature will move into plugin-flexbox
-    // 'flex': testProp(['WebkitBoxFlex', 'msFlex', 'WebkitFlex', 'flex'])
   }
 
 
@@ -147,7 +144,7 @@ var cssobj_plugin_cssom = (function () {
 
     // shortcut for names that are not vendor prefixed
     // when name already have '-' as first char, don't prefix
-    if ( name in emptyStyle ) return
+    if ( name in emptyStyle || name.charAt(0) == '-') return
 
     // check for vendor prefixed names
     var preName, capName = capitalize(name)
@@ -431,6 +428,9 @@ var cssobj_plugin_cssom = (function () {
       }
     }
   }
+  cssobj_plugin_post_cssom.version = '2.1.4'
+
+  // commitHash: 2d4ad0e31ba7957b6615f5c34f53ed03464eccae
 
   return cssobj_plugin_post_cssom;
 
