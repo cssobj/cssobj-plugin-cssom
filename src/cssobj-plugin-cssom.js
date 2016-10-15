@@ -153,6 +153,9 @@ function prefixProp (name, inCSS) {
 export default function cssobj_plugin_post_cssom (option) {
   option = option || {}
 
+  // prefixes array can change the global default vendor prefixes
+  if(option.prefixes) cssPrefixes = option.prefixes
+
   var id = option.name
       ? (option.name+'').replace(/[^a-zA-Z0-9$_-]/g, '')
       : 'style_cssobj' + random()

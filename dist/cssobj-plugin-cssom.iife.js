@@ -173,6 +173,9 @@ var cssobj_plugin_cssom = (function () {
   function cssobj_plugin_post_cssom (option) {
     option = option || {}
 
+    // prefixes array can change the global default vendor prefixes
+    if(option.prefixes) cssPrefixes = option.prefixes
+
     var id = option.name
         ? (option.name+'').replace(/[^a-zA-Z0-9$_-]/g, '')
         : 'style_cssobj' + random()
@@ -428,9 +431,9 @@ var cssobj_plugin_cssom = (function () {
       }
     }
   }
-  cssobj_plugin_post_cssom.version = '2.1.4'
+  cssobj_plugin_post_cssom.version = '2.1.5'
 
-  // commitHash: 2d4ad0e31ba7957b6615f5c34f53ed03464eccae
+  // commitHash: 48bd712baac33d8d59b8bfe647a262de2820fdb5
 
   return cssobj_plugin_post_cssom;
 
