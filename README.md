@@ -1,5 +1,7 @@
 # cssobj-plugin-cssom
 
+[![Join the chat at https://gitter.im/css-in-js/cssobj](https://badges.gitter.im/css-in-js/cssobj.svg)](https://gitter.im/css-in-js/cssobj)
+
 Apply cssobj Virtual CSS into browser's [CSSOM](https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model).
 
 This plugin already integrated into [cssobj](https://github.com/cssobj/cssobj), don't apply it twice if you use **cssobj**.
