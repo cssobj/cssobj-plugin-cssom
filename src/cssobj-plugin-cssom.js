@@ -137,7 +137,7 @@ function vendorPropName( name ) {
 }
 
 // apply prop to get right vendor prefix
-// cap=0 for no cap; cap=1 for capitalize prefix
+// inCSS false=camelcase; true=dashed
 function prefixProp (name, inCSS) {
   // $prop will skip
   if(name.charAt(0)=='$') return ''
@@ -149,8 +149,37 @@ function prefixProp (name, inCSS) {
       : retName
 }
 
+/**
+ * Get value and important flag from value str
+ * @param {CSSStyleRule} rule css style rule object
+ * @param {string} prop prop to set
+ * @param {string} val value string
+ */
+function setCSSProperty (styleObj, prop, val) {
+  var value
+  var important = /(.*)!(important)\s*$/i.exec(val)
+  var propCamel = prefixProp(prop)
+  var propDash = prefixProp(prop, true)
+  if(important) {
+    value = important[1]
+    important = important[2]
+    if(styleObj.setProperty) styleObj.setProperty(propDash, value, important)
+    else {
+      // for old IE, cssText is writable, and below is valid for contain !important
+      // don't use styleObj.setAttribute since it's not set important
+      // should do: delete styleObj[propCamel], but not affect result
 
-export default function cssobj_plugin_post_cssom (option) {
+      // only work on <= IE8: s.style['FONT-SIZE'] = '12px!important'
+      styleObj[propDash.toUpperCase()] = val
+      // refresh cssText, the whole rule!
+      styleObj.cssText = styleObj.cssText
+    }
+  } else {
+    styleObj[propCamel] = val
+  }
+}
+
+function cssobj_plugin_post_cssom (option) {
   option = option || {}
 
   // prefixes array can change the global default vendor prefixes
@@ -377,19 +406,17 @@ export default function cssobj_plugin_post_cssom (option) {
 
           // added have same action as changed, can be merged... just for clarity
           diff.added && diff.added.forEach(function (v) {
-            var prefixV = prefixProp(v)
-            prefixV && om && om.forEach(function (rule) {
+            v && om && om.forEach(function (rule) {
               try{
-                rule.style[prefixV] = node.prop[v][0]
+                setCSSProperty(rule.style, v, node.prop[v][0])
               }catch(e){}
             })
           })
 
           diff.changed && diff.changed.forEach(function (v) {
-            var prefixV = prefixProp(v)
-            prefixV && om && om.forEach(function (rule) {
+            v && om && om.forEach(function (rule) {
               try{
-                rule.style[prefixV] = node.prop[v][0]
+                setCSSProperty(rule.style, v, node.prop[v][0])
               }catch(e){}
             })
           })
@@ -411,4 +438,6 @@ export default function cssobj_plugin_post_cssom (option) {
     }
   }
 }
+
+export default cssobj_plugin_post_cssom
 

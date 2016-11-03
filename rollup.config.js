@@ -11,7 +11,7 @@ var commitHash = (function () {
 })()
 
 var pkg = JSON.parse(readFileSync('package.json', 'utf8'))
-var outro = readFileSync('./src/outro.js', 'utf8')
+var banner = readFileSync('./src/banner.js', 'utf8')
     .replace('<@VERSION@>', pkg.version)
     .replace('<@TIME@>', new Date())
     .replace('<@commitHash@>', commitHash)
@@ -19,8 +19,7 @@ var outro = readFileSync('./src/outro.js', 'utf8')
 export default {
   entry: 'src/cssobj-plugin-cssom.js',
   moduleName: 'cssobj_plugin_cssom',
-  moduleId: 'cssobj_plugin_cssom',
-  outro: outro,
+  banner: banner,
   targets: [
     { format: 'iife', dest: 'dist/cssobj-plugin-cssom.iife.js' },
     { format: 'amd',  dest: 'dist/cssobj-plugin-cssom.amd.js'  },

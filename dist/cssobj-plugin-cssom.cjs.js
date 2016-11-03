@@ -1,4 +1,22 @@
+// version: '2.1.6'
+// commitHash: ec55e74a8343f6114f60c1df020da0e0a4e96e74
+// time: Thu Nov 03 2016 18:40:13 GMT+0800 (HKT)
+
+
+
 'use strict';
+
+// helper functions for cssobj
+
+// check n is numeric, or string of numeric
+
+
+function own(o, k) {
+  return {}.hasOwnProperty.call(o, k)
+}
+
+// set default option (not deeply)
+
 
 // convert js prop into css prop (dashified)
 function dashify(str) {
@@ -12,49 +30,78 @@ function capitalize (str) {
   return str.charAt(0).toUpperCase() + str.substr(1)
 }
 
+// repeat str for num times
+
+
+// don't use String.prototype.trim in cssobj, using below instead
+
+
 // random string, should used across all cssobj plugins
 var random = (function () {
-  var count = 0
+  var count = 0;
   return function () {
-    count++
+    count++;
     return '_' + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
   }
-})()
+})();
+
+// extend obj from source, if it's no key in obj, create one
+
+
+// ensure obj[k] as array, then push v into it
+function arrayKV (obj, k, v, reverse, unique) {
+  obj[k] = k in obj ? [].concat(obj[k]) : [];
+  if(unique && obj[k].indexOf(v)>-1) return
+  reverse ? obj[k].unshift(v) : obj[k].push(v);
+}
+
+// replace find in str, with rep function result
+
+
+// get parents array from node (when it's passed the test)
+
+
+// split selector etc. aware of css attributes
+
+
+// checking for valid css value
+
+// plugin for cssobj
 
 function createDOM (rootDoc, id, option) {
-  var el = rootDoc.getElementById(id)
+  var el = rootDoc.getElementById(id);
   if(el) return el
-  el = rootDoc.createElement('style')
-  rootDoc.getElementsByTagName('head')[0].appendChild(el)
-  el.setAttribute('id', id)
+  el = rootDoc.createElement('style');
+  rootDoc.getElementsByTagName('head')[0].appendChild(el);
+  el.setAttribute('id', id);
   if (option && typeof option == 'object' && option.attrs)
     for (var i in option.attrs) {
-      el.setAttribute(i, option.attrs[i])
+      el.setAttribute(i, option.attrs[i]);
     }
   return el
 }
 
 var addCSSRule = function (parent, selector, body, node) {
-  var isImportRule = /@import/i.test(node.selText)
-  var rules = parent.cssRules || parent.rules
-  var index=0
+  var isImportRule = /@import/i.test(node.selText);
+  var rules = parent.cssRules || parent.rules;
+  var index=0;
 
-  var omArr = []
+  var omArr = [];
   var str = node.inline
       ? body.map(function(v) {
         return [node.selText, ' ', v]
       })
-      : [[selector, '{', body.join(''), '}']]
+      : [[selector, '{', body.join(''), '}']];
 
   str.forEach(function(text) {
     if (parent.cssRules) {
       try {
-        index = isImportRule ? 0 : rules.length
+        index = isImportRule ? 0 : rules.length;
         parent.appendRule
           ? parent.appendRule(text.join(''))  // keyframes.appendRule return undefined
-          : parent.insertRule(text.join(''), index) //firefox <16 also return undefined...
+          : parent.insertRule(text.join(''), index); //firefox <16 also return undefined...
 
-        omArr.push(rules[index])
+        omArr.push(rules[index]);
 
       } catch(e) {
         // modern browser with prefix check, now only -webkit-
@@ -75,8 +122,8 @@ var addCSSRule = function (parent, selector, body, node) {
         try {
           // remove ALL @-rule support for old IE
           if(isImportRule) {
-            index = parent.addImport(text[2])
-            omArr.push(parent.imports[index])
+            index = parent.addImport(text[2]);
+            omArr.push(parent.imports[index]);
 
             // IE addPageRule() return: not implemented!!!!
             // } else if (/@page/.test(sel)) {
@@ -84,31 +131,31 @@ var addCSSRule = function (parent, selector, body, node) {
             //   omArr.push(rules[rules.length-1])
 
           } else if (!/^\s*@/.test(sel)) {
-            parent.addRule(sel, text[2], rules.length)
+            parent.addRule(sel, text[2], rules.length);
             // old IE have bug: addRule will always return -1!!!
-            omArr.push(rules[rules.length-1])
+            omArr.push(rules[rules.length-1]);
           }
         } catch(e) {
           // console.log(e, selector, body)
         }
-      })
+      });
     }
-  })
+  });
 
   return omArr
-}
+};
 
 function getBodyCss (node) {
   // get cssText from prop
-  var prop = node.prop
+  var prop = node.prop;
   return Object.keys(prop).map(function (k) {
     // skip $prop, e.g. $id, $order
     if(k.charAt(0)=='$') return ''
     for (var v, ret='', i = prop[k].length; i--;) {
-      v = prop[k][i]
+      v = prop[k][i];
 
       // value expand & merge should be done as value function/plugin in cssobj-core >=0.5.0
-      ret += node.inline ? k : dashify(prefixProp(k, true)) + ':' + v + ';'
+      ret += node.inline ? k : dashify(prefixProp(k, true)) + ':' + v + ';';
     }
     return ret
   })
@@ -116,14 +163,14 @@ function getBodyCss (node) {
 
 // vendor prefix support
 // borrowed from jQuery 1.12
-var	cssPrefixes = [ "Webkit", "Moz", "ms", "O" ]
-var cssPrefixesReg = new RegExp('^(?:' + cssPrefixes.join('|') + ')[A-Z]')
-var	emptyStyle = document.createElement( "div" ).style
+var cssPrefixes = [ "Webkit", "Moz", "ms", "O" ];
+var cssPrefixesReg = new RegExp('^(?:' + cssPrefixes.join('|') + ')[A-Z]');
+var emptyStyle = document.createElement( "div" ).style;
 var testProp  = function (list) {
   for(var i = list.length; i--;) {
     if(list[i] in emptyStyle) return list[i]
   }
-}
+};
 
 //
 /**
@@ -132,10 +179,10 @@ var testProp  = function (list) {
  * 1. diff & patch properties for CSSOM
  * 2. vendorPrefix property name checking
  */
-var	cssProps = {
+var cssProps = {
   // normalize float css property
   'float': testProp(['styleFloat', 'cssFloat', 'float'])
-}
+};
 
 
 // return a css property mapped to a potentially vendor prefixed property
@@ -146,43 +193,72 @@ function vendorPropName( name ) {
   if ( name in emptyStyle || name.charAt(0) == '-') return
 
   // check for vendor prefixed names
-  var preName, capName = capitalize(name)
-  var i = cssPrefixes.length
+  var preName, capName = capitalize(name);
+  var i = cssPrefixes.length;
 
   while ( i-- ) {
-    preName = cssPrefixes[ i ] + capName
+    preName = cssPrefixes[ i ] + capName;
     if ( preName in emptyStyle ) return preName
   }
 }
 
 // apply prop to get right vendor prefix
-// cap=0 for no cap; cap=1 for capitalize prefix
+// inCSS false=camelcase; true=dashed
 function prefixProp (name, inCSS) {
   // $prop will skip
   if(name.charAt(0)=='$') return ''
   // find name and cache the name for next time use
   var retName = cssProps[ name ] ||
-      ( cssProps[ name ] = vendorPropName( name ) || name)
+      ( cssProps[ name ] = vendorPropName( name ) || name);
   return inCSS   // if hasPrefix in prop
       ? cssPrefixesReg.test(retName) ? capitalize(retName) : name=='float' && name || retName  // fix float in CSS, avoid return cssFloat
       : retName
 }
 
+/**
+ * Get value and important flag from value str
+ * @param {CSSStyleRule} rule css style rule object
+ * @param {string} prop prop to set
+ * @param {string} val value string
+ */
+function setCSSProperty (styleObj, prop, val) {
+  var value;
+  var important = /(.*)!(important)\s*$/i.exec(val);
+  var propCamel = prefixProp(prop);
+  var propDash = prefixProp(prop, true);
+  if(important) {
+    value = important[1];
+    important = important[2];
+    if(styleObj.setProperty) styleObj.setProperty(propDash, value, important);
+    else {
+      // for old IE, cssText is writable, and below is valid for contain !important
+      // don't use styleObj.setAttribute since it's not set important
+      // should do: delete styleObj[propCamel], but not affect result
+
+      // only work on <= IE8: s.style['FONT-SIZE'] = '12px!important'
+      styleObj[propDash.toUpperCase()] = val;
+      // refresh cssText, the whole rule!
+      styleObj.cssText = styleObj.cssText;
+    }
+  } else {
+    styleObj[propCamel] = val;
+  }
+}
 
 function cssobj_plugin_post_cssom (option) {
-  option = option || {}
+  option = option || {};
 
   // prefixes array can change the global default vendor prefixes
-  if(option.prefixes) cssPrefixes = option.prefixes
+  if(option.prefixes) cssPrefixes = option.prefixes;
 
   var id = option.name
       ? (option.name+'').replace(/[^a-zA-Z0-9$_-]/g, '')
-      : 'style_cssobj' + random()
+      : 'style_cssobj' + random();
 
-  var frame = option.frame
-  var rootDoc = frame ? frame.contentDocument||frame.contentWindow.document : document
-  var dom = createDOM(rootDoc, id, option)
-  var sheet = dom.sheet || dom.styleSheet
+  var frame = option.frame;
+  var rootDoc = frame ? frame.contentDocument||frame.contentWindow.document : document;
+  var dom = createDOM(rootDoc, id, option);
+  var sheet = dom.sheet || dom.styleSheet;
 
   // sheet.insertRule ("@import url('test.css');", 0)  // it's ok to insert @import, but only at top
   // sheet.insertRule ("@charset 'UTF-8';", 0)  // throw SyntaxError https://www.w3.org/Bugs/Public/show_bug.cgi?id=22207
@@ -192,59 +268,59 @@ function cssobj_plugin_post_cssom (option) {
 
   // helper regexp & function
   // @page in FF not allowed pseudo @page :first{}, with SyntaxError: An invalid or illegal string was specified
-  var reWholeRule = /page/i
+  var reWholeRule = /page/i;
   var atomGroupRule = function (node) {
     return !node ? false : reWholeRule.test(node.at) || node.parentRule && reWholeRule.test(node.parentRule.at)
-  }
+  };
 
   var getParent = function (node) {
-    var p = 'omGroup' in node ? node : node.parentRule
+    var p = 'omGroup' in node ? node : node.parentRule;
     return p && p.omGroup || sheet
-  }
+  };
 
   var validParent = function (node) {
     return !node.parentRule || node.parentRule.omGroup !== null
-  }
+  };
 
   var removeOneRule = function (rule) {
     if (!rule) return
-    var parent = rule.parentRule || sheet
-    var rules = parent.cssRules || parent.rules
+    var parent = rule.parentRule || sheet;
+    var rules = parent.cssRules || parent.rules;
     var removeFunc = function (v, i) {
       if((v===rule)) {
         parent.deleteRule
           ? parent.deleteRule(rule.keyText || i)
-          : parent.removeRule(i)
+          : parent.removeRule(i);
         return true
       }
-    }
+    };
     // sheet.imports have bugs in IE:
     // > sheet.removeImport(0)  it's work, then again
     // > sheet.removeImport(0)  it's not work!!!
     //
     // parent.imports && [].some.call(parent.imports, removeFunc)
-    ![].some.call(rules, removeFunc)
-  }
+    ![].some.call(rules, removeFunc);
+  };
 
   function removeNode (node) {
     // remove mediaStore for old IE
-    var groupIdx = mediaStore.indexOf(node)
+    var groupIdx = mediaStore.indexOf(node);
     if (groupIdx > -1) {
       // before remove from mediaStore
       // don't forget to remove all children, by a walk
-      node.mediaEnabled = false
-      walk(node)
-      mediaStore.splice(groupIdx, 1)
+      node.mediaEnabled = false;
+      walk(node);
+      mediaStore.splice(groupIdx, 1);
     }
     // remove Group rule and Nomal rule
-    ![node.omGroup].concat(node.omRule).forEach(removeOneRule)
+    ![node.omGroup].concat(node.omRule).forEach(removeOneRule);
   }
 
   // helper function for addNormalrule
   var addNormalRule = function (node, selText, cssText) {
     if(!cssText) return
     // get parent to add
-    var parent = getParent(node)
+    var parent = getParent(node);
     if (validParent(node))
       return node.omRule = addCSSRule(parent, selText, cssText, node)
     else if (node.parentRule) {
@@ -252,32 +328,32 @@ function cssobj_plugin_post_cssom (option) {
       if (node.parentRule.mediaEnabled) {
         if (!node.omRule) return node.omRule = addCSSRule(parent, selText, cssText, node)
       }else if (node.omRule) {
-        node.omRule.forEach(removeOneRule)
-        delete node.omRule
+        node.omRule.forEach(removeOneRule);
+        delete node.omRule;
       }
     }
-  }
+  };
 
-  var mediaStore = []
+  var mediaStore = [];
 
   var checkMediaList = function () {
     mediaStore.forEach(function (v) {
-      v.mediaEnabled = v.mediaTest(rootDoc)
-      walk(v)
-    })
-  }
+      v.mediaEnabled = v.mediaTest(rootDoc);
+      walk(v);
+    });
+  };
 
   if (window.attachEvent) {
-    window.attachEvent('onresize', checkMediaList)
+    window.attachEvent('onresize', checkMediaList);
   } else if (window.addEventListener) {
-    window.addEventListener('resize', checkMediaList, true)
+    window.addEventListener('resize', checkMediaList, true);
   }
 
   var walk = function (node, store) {
     if (!node) return
 
     // cssobj generate vanilla Array, it's safe to use constructor, fast
-    if (node.constructor === Array) return node.map(function (v) {walk(v, store)})
+    if (node.constructor === Array) return node.map(function (v) {walk(v, store);})
 
     // skip $key node
     if(node.key && node.key.charAt(0)=='$' || !node.prop) return
@@ -287,24 +363,24 @@ function cssobj_plugin_post_cssom (option) {
       return node.selParent.postArr.push(node)
     }
 
-    node.postArr = []
-    var children = node.children
-    var isGroup = node.type == 'group'
+    node.postArr = [];
+    var children = node.children;
+    var isGroup = node.type == 'group';
 
-    if (atomGroupRule(node)) store = store || []
+    if (atomGroupRule(node)) store = store || [];
 
     if (isGroup) {
       // if it's not @page, @keyframes (which is not groupRule in fact)
       if (!atomGroupRule(node)) {
-        var reAdd = 'omGroup' in node
-        if (node.at=='media' && option.noMedia) node.omGroup = null
+        var reAdd = 'omGroup' in node;
+        if (node.at=='media' && option.noMedia) node.omGroup = null;
         else [''].concat(cssPrefixes).some(function (v) {
           return node.omGroup = addCSSRule(
             // all groupRule will be added to root sheet
             sheet,
             '@' + (v ? '-' + v.toLowerCase() + '-' : v) + node.groupText.slice(1), [], node
           ).pop() || null
-        })
+        });
 
 
         // when add media rule failed, build test function then check on window.resize
@@ -319,119 +395,114 @@ function cssobj_plugin_post_cssom (option) {
               .replace(/\band\b/ig, '&&')
               .replace(/,/g, '||')
               .replace(/\(/g, '(doc.documentElement.offsetWidth')
-          )
+          );
 
           try {
             // first test if it's valid function
-            var mediaEnabled = mediaTest(rootDoc)
-            node.mediaTest = mediaTest
-            node.mediaEnabled = mediaEnabled
-            mediaStore.push(node)
+            var mediaEnabled = mediaTest(rootDoc);
+            node.mediaTest = mediaTest;
+            node.mediaEnabled = mediaEnabled;
+            mediaStore.push(node);
           } catch(e) {}
         }
       }
     }
 
-    var selText = node.selTextPart
-    var cssText = getBodyCss(node)
+    var selText = node.selTextPart;
+    var cssText = getBodyCss(node);
 
     // it's normal css rule
     if (cssText.join('')) {
       if (!atomGroupRule(node)) {
-        addNormalRule(node, selText, cssText)
+        addNormalRule(node, selText, cssText);
       }
-      store && store.push(selText ? selText + ' {' + cssText.join('') + '}' : cssText)
+      store && store.push(selText ? selText + ' {' + cssText.join('') + '}' : cssText);
     }
 
     for (var c in children) {
       // empty key will pending proceed
-      if (c === '') node.postArr.push(children[c])
-      else walk(children[c], store)
+      if (c === '') node.postArr.push(children[c]);
+      else walk(children[c], store);
     }
 
     if (isGroup) {
       // if it's @page, @keyframes
       if (atomGroupRule(node) && validParent(node)) {
-        addNormalRule(node, node.groupText, store)
-        store = null
+        addNormalRule(node, node.groupText, store);
+        store = null;
       }
     }
 
     // media rules need a stand alone block
-    var postArr = node.postArr
-    delete node.postArr
+    var postArr = node.postArr;
+    delete node.postArr;
     postArr.map(function (v) {
-      walk(v, store)
-    })
-  }
+      walk(v, store);
+    });
+  };
 
   return {
     post: function (result) {
-      result.cssdom = dom
+      result.cssdom = dom;
       if (!result.diff) {
         // it's first time render
-        walk(result.root)
+        walk(result.root);
       } else {
         // it's not first time, patch the diff result to CSSOM
-        var diff = result.diff
+        var diff = result.diff;
 
         // node added
         if (diff.added) diff.added.forEach(function (node) {
-          walk(node)
-        })
+          walk(node);
+        });
 
         // node removed
         if (diff.removed) diff.removed.forEach(function (node) {
           // also remove all child group & sel
-          node.selChild && node.selChild.forEach(removeNode)
-          removeNode(node)
-        })
+          node.selChild && node.selChild.forEach(removeNode);
+          removeNode(node);
+        });
 
         // node changed, find which part should be patched
         if (diff.changed) diff.changed.forEach(function (node) {
-          var om = node.omRule
-          var diff = node.diff
+          var om = node.omRule;
+          var diff = node.diff;
 
-          if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node))
+          if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node));
 
           // added have same action as changed, can be merged... just for clarity
           diff.added && diff.added.forEach(function (v) {
-            var prefixV = prefixProp(v)
-            prefixV && om && om.forEach(function (rule) {
+            v && om && om.forEach(function (rule) {
               try{
-                rule.style[prefixV] = node.prop[v][0]
+                setCSSProperty(rule.style, v, node.prop[v][0]);
               }catch(e){}
-            })
-          })
+            });
+          });
 
           diff.changed && diff.changed.forEach(function (v) {
-            var prefixV = prefixProp(v)
-            prefixV && om && om.forEach(function (rule) {
+            v && om && om.forEach(function (rule) {
               try{
-                rule.style[prefixV] = node.prop[v][0]
+                setCSSProperty(rule.style, v, node.prop[v][0]);
               }catch(e){}
-            })
-          })
+            });
+          });
 
           diff.removed && diff.removed.forEach(function (v) {
-            var prefixV = prefixProp(v)
+            var prefixV = prefixProp(v);
             prefixV && om && om.forEach(function (rule) {
               try{
                 rule.style.removeProperty
                   ? rule.style.removeProperty(prefixV)
-                  : rule.style.removeAttribute(prefixV)
+                  : rule.style.removeAttribute(prefixV);
               }catch(e){}
-            })
-          })
-        })
+            });
+          });
+        });
       }
 
       return result
     }
   }
 }
-cssobj_plugin_post_cssom.version = '2.1.5'
-
-// commitHash: 48bd712baac33d8d59b8bfe647a262de2820fdb5
 
 module.exports = cssobj_plugin_post_cssom;
