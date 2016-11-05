@@ -1,6 +1,6 @@
-// version: '2.1.6'
-// commitHash: ec55e74a8343f6114f60c1df020da0e0a4e96e74
-// time: Thu Nov 03 2016 18:40:13 GMT+0800 (HKT)
+// version: '2.1.7'
+// commitHash: d3aa34e514a38adcf3660fc850c54843b54baba7
+// time: Sun Nov 06 2016 07:30:52 GMT+0800 (HKT)
 
 
 
@@ -224,7 +224,7 @@ function prefixProp (name, inCSS) {
  */
 function setCSSProperty (styleObj, prop, val) {
   var value;
-  var important = /(.*)!(important)\s*$/i.exec(val);
+  var important = /^(.*)!(important)\s*$/i.exec(val);
   var propCamel = prefixProp(prop);
   var propDash = prefixProp(prop, true);
   if(important) {

@@ -157,7 +157,7 @@ function prefixProp (name, inCSS) {
  */
 function setCSSProperty (styleObj, prop, val) {
   var value
-  var important = /(.*)!(important)\s*$/i.exec(val)
+  var important = /^(.*)!(important)\s*$/i.exec(val)
   var propCamel = prefixProp(prop)
   var propDash = prefixProp(prop, true)
   if(important) {
