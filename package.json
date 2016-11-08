@@ -1,6 +1,6 @@
 {
   "name": "cssobj-plugin-cssom",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "description": "Generate and patch style sheet into CSSOM for cssobj-core",
   "main": "dist/cssobj-plugin-cssom.cjs.js",
   "jsnext:main": "dist/cssobj-plugin-cssom.es.js",

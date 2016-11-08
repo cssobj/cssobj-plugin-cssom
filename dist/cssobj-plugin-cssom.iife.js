@@ -1,6 +1,6 @@
-// version: '2.1.7'
-// commitHash: d3aa34e514a38adcf3660fc850c54843b54baba7
-// time: Sun Nov 06 2016 07:30:52 GMT+0800 (HKT)
+// version: '2.1.8'
+// commitHash: c70e219c3d2ecb7b847c7d3e3fde872e57251a75
+// time: Tue Nov 08 2016 17:21:16 GMT+0800 (HKT)
 
 
 
@@ -71,11 +71,15 @@ function arrayKV (obj, k, v, reverse, unique) {
 
 function createDOM (rootDoc, id, option) {
   var el = rootDoc.getElementById(id);
-  if(el) return el
+  var head = rootDoc.getElementsByTagName('head')[0];
+  if(el) {
+    if(option.reset) head.removeChild(el);
+    else return el
+  }
   el = rootDoc.createElement('style');
-  rootDoc.getElementsByTagName('head')[0].appendChild(el);
+  head.appendChild(el);
   el.setAttribute('id', id);
-  if (option && typeof option == 'object' && option.attrs)
+  if (option.attrs)
     for (var i in option.attrs) {
       el.setAttribute(i, option.attrs[i]);
     }

@@ -4,11 +4,15 @@ import { dashify, random, capitalize } from '../../cssobj-helper/lib/cssobj-help
 
 function createDOM (rootDoc, id, option) {
   var el = rootDoc.getElementById(id)
-  if(el) return el
+  var head = rootDoc.getElementsByTagName('head')[0]
+  if(el) {
+    if(option.reset) head.removeChild(el)
+    else return el
+  }
   el = rootDoc.createElement('style')
-  rootDoc.getElementsByTagName('head')[0].appendChild(el)
+  head.appendChild(el)
   el.setAttribute('id', id)
-  if (option && typeof option == 'object' && option.attrs)
+  if (option.attrs)
     for (var i in option.attrs) {
       el.setAttribute(i, option.attrs[i])
     }
