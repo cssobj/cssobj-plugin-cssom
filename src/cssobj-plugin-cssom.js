@@ -189,9 +189,7 @@ function cssobj_plugin_post_cssom (option) {
   // prefixes array can change the global default vendor prefixes
   if(option.prefixes) cssPrefixes = option.prefixes
 
-  var id = option.name
-      ? (option.name+'').replace(/[^a-zA-Z0-9$_-]/g, '')
-      : 'style_cssobj' + random()
+  var id = option.name || 'style_cssobj' + random()
 
   var frame = option.frame
   var rootDoc = frame ? frame.contentDocument||frame.contentWindow.document : document
