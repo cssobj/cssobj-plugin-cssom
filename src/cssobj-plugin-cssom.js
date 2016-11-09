@@ -6,8 +6,8 @@ function createDOM (rootDoc, id, option) {
   var el = rootDoc.getElementById(id)
   var head = rootDoc.getElementsByTagName('head')[0]
   if(el) {
-    if(option.reset) head.removeChild(el)
-    else return el
+    if(option.append) return el
+    head.removeChild(el)
   }
   el = rootDoc.createElement('style')
   head.appendChild(el)

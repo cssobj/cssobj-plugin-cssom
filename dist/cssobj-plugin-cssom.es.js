@@ -1,6 +1,6 @@
-// version: '2.1.8'
-// commitHash: c70e219c3d2ecb7b847c7d3e3fde872e57251a75
-// time: Tue Nov 08 2016 17:21:16 GMT+0800 (HKT)
+// version: '2.1.9'
+// commitHash: fb778194ed9b7edaeb9c6b20509e1cee0973169b
+// time: Wed Nov 09 2016 09:34:55 GMT+0800 (HKT)
 
 
 
@@ -70,8 +70,8 @@ function createDOM (rootDoc, id, option) {
   var el = rootDoc.getElementById(id);
   var head = rootDoc.getElementsByTagName('head')[0];
   if(el) {
-    if(option.reset) head.removeChild(el);
-    else return el
+    if(option.append) return el
+    head.removeChild(el);
   }
   el = rootDoc.createElement('style');
   head.appendChild(el);
