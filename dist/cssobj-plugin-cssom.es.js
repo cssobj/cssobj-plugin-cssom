@@ -1,6 +1,6 @@
-// version: '2.1.10'
-// commitHash: 4daa554e421c52e218d37e3c10d1bfea5c120c0b
-// time: Wed Nov 09 2016 18:28:34 GMT+0800 (HKT)
+// version: '2.2.0'
+// commitHash: f594da8a58f04fcfeb43f0bc551cbe9c725593dd
+// time: Fri Nov 11 2016 10:16:07 GMT+0800 (HKT)
 
 
 
@@ -251,9 +251,9 @@ function cssobj_plugin_post_cssom (option) {
   option = option || {};
 
   // prefixes array can change the global default vendor prefixes
-  if(option.prefixes) cssPrefixes = option.prefixes;
+  if(option.vendors) cssPrefixes = option.vendors;
 
-  var id = option.name || 'style_cssobj' + random();
+  var id = option.id || 'cssobj' + random();
 
   var frame = option.frame;
   var rootDoc = frame ? frame.contentDocument||frame.contentWindow.document : document;
