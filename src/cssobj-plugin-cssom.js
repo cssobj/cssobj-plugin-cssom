@@ -56,7 +56,7 @@ var addCSSRule = function (parent, selector, body, node) {
       // only supported @rule will accept: @import
       // old IE addRule don't support 'dd,dl' form, add one by one
       // selector normally is node.selTextPart, but have to be array type
-      ![].concat(selector).forEach(function (sel) {
+      ;[].concat(selector).forEach(function (sel) {
         try {
           // remove ALL @-rule support for old IE
           if(isImportRule) {
@@ -235,7 +235,7 @@ function cssobj_plugin_post_cssom (option) {
     // > sheet.removeImport(0)  it's not work!!!
     //
     // parent.imports && [].some.call(parent.imports, removeFunc)
-    ![].some.call(rules, removeFunc)
+    ;[].some.call(rules, removeFunc)
   }
 
   function removeNode (node) {
@@ -249,7 +249,7 @@ function cssobj_plugin_post_cssom (option) {
       mediaStore.splice(groupIdx, 1)
     }
     // remove Group rule and Nomal rule
-    ![node.omGroup].concat(node.omRule).forEach(removeOneRule)
+    ;[node.omGroup].concat(node.omRule).forEach(removeOneRule)
   }
 
   // helper function for addNormalrule
@@ -407,15 +407,7 @@ function cssobj_plugin_post_cssom (option) {
           if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node))
 
           // added have same action as changed, can be merged... just for clarity
-          diff.added && diff.added.forEach(function (v) {
-            v && om && om.forEach(function (rule) {
-              try{
-                setCSSProperty(rule.style, v, node.prop[v][0])
-              }catch(e){}
-            })
-          })
-
-          diff.changed && diff.changed.forEach(function (v) {
+          ;[].concat(diff.added, diff.changed).forEach(function (v) {
             v && om && om.forEach(function (rule) {
               try{
                 setCSSProperty(rule.style, v, node.prop[v][0])

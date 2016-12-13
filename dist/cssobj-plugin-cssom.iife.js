@@ -1,6 +1,6 @@
-// version: '2.2.0'
-// commitHash: f594da8a58f04fcfeb43f0bc551cbe9c725593dd
-// time: Fri Nov 11 2016 10:16:07 GMT+0800 (HKT)
+// version: '2.2.1'
+// commitHash: d3107b4571671bb4804b6c51db09d67752327944
+// time: Tue Dec 13 2016 20:35:45 GMT+0800 (HKT)
 
 
 
@@ -34,15 +34,12 @@ function capitalize (str) {
 // repeat str for num times
 
 
-// don't use String.prototype.trim in cssobj, using below instead
-
-
 // random string, should used across all cssobj plugins
 var random = (function () {
   var count = 0;
-  return function () {
+  return function (prefix) {
     count++;
-    return '_' + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
+    return '_' + (prefix||'') + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
   }
 })();
 
@@ -123,7 +120,7 @@ var addCSSRule = function (parent, selector, body, node) {
       // only supported @rule will accept: @import
       // old IE addRule don't support 'dd,dl' form, add one by one
       // selector normally is node.selTextPart, but have to be array type
-      ![].concat(selector).forEach(function (sel) {
+      [].concat(selector).forEach(function (sel) {
         try {
           // remove ALL @-rule support for old IE
           if(isImportRule) {
@@ -296,13 +293,7 @@ function cssobj_plugin_post_cssom (option) {
           : parent.removeRule(i);
         return true
       }
-    };
-    // sheet.imports have bugs in IE:
-    // > sheet.removeImport(0)  it's work, then again
-    // > sheet.removeImport(0)  it's not work!!!
-    //
-    // parent.imports && [].some.call(parent.imports, removeFunc)
-    ![].some.call(rules, removeFunc);
+    };[].some.call(rules, removeFunc);
   };
 
   function removeNode (node) {
@@ -316,7 +307,7 @@ function cssobj_plugin_post_cssom (option) {
       mediaStore.splice(groupIdx, 1);
     }
     // remove Group rule and Nomal rule
-    ![node.omGroup].concat(node.omRule).forEach(removeOneRule);
+    [node.omGroup].concat(node.omRule).forEach(removeOneRule);
   }
 
   // helper function for addNormalrule
@@ -471,18 +462,10 @@ function cssobj_plugin_post_cssom (option) {
           var om = node.omRule;
           var diff = node.diff;
 
-          if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node));
+          if (!om) om = addNormalRule(node, node.selTextPart, getBodyCss(node))
 
           // added have same action as changed, can be merged... just for clarity
-          diff.added && diff.added.forEach(function (v) {
-            v && om && om.forEach(function (rule) {
-              try{
-                setCSSProperty(rule.style, v, node.prop[v][0]);
-              }catch(e){}
-            });
-          });
-
-          diff.changed && diff.changed.forEach(function (v) {
+          ;[].concat(diff.added, diff.changed).forEach(function (v) {
             v && om && om.forEach(function (rule) {
               try{
                 setCSSProperty(rule.style, v, node.prop[v][0]);
