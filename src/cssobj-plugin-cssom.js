@@ -51,32 +51,6 @@ var addCSSRule = function (parent, selector, body, node) {
         // the rule is not supported, fail silently
         // console.log(e, selector, body, pos)
       }
-    } else if (parent.addRule) {
-      // https://msdn.microsoft.com/en-us/library/hh781508(v=vs.85).aspx
-      // only supported @rule will accept: @import
-      // old IE addRule don't support 'dd,dl' form, add one by one
-      // selector normally is node.selTextPart, but have to be array type
-      ;[].concat(selector).forEach(function (sel) {
-        try {
-          // remove ALL @-rule support for old IE
-          if(isImportRule) {
-            index = parent.addImport(text[2])
-            omArr.push(parent.imports[index])
-
-            // IE addPageRule() return: not implemented!!!!
-            // } else if (/@page/.test(sel)) {
-            //   index = parent.addPageRule(sel, text[2], -1)
-            //   omArr.push(rules[rules.length-1])
-
-          } else if (!/^\s*@/.test(sel)) {
-            parent.addRule(sel, text[2], rules.length)
-            // old IE have bug: addRule will always return -1!!!
-            omArr.push(rules[rules.length-1])
-          }
-        } catch(e) {
-          // console.log(e, selector, body)
-        }
-      })
     }
   })
 
@@ -168,16 +142,6 @@ function setCSSProperty (styleObj, prop, val) {
     value = important[1]
     important = important[2]
     if(styleObj.setProperty) styleObj.setProperty(propDash, value, important)
-    else {
-      // for old IE, cssText is writable, and below is valid for contain !important
-      // don't use styleObj.setAttribute since it's not set important
-      // should do: delete styleObj[propCamel], but not affect result
-
-      // only work on <= IE8: s.style['FONT-SIZE'] = '12px!important'
-      styleObj[propDash.toUpperCase()] = val
-      // refresh cssText, the whole rule!
-      styleObj.cssText = styleObj.cssText
-    }
   } else {
     styleObj[propCamel] = val
   }
@@ -239,15 +203,6 @@ function cssobj_plugin_post_cssom (option) {
   }
 
   function removeNode (node) {
-    // remove mediaStore for old IE
-    var groupIdx = mediaStore.indexOf(node)
-    if (groupIdx > -1) {
-      // before remove from mediaStore
-      // don't forget to remove all children, by a walk
-      node.mediaEnabled = false
-      walk(node)
-      mediaStore.splice(groupIdx, 1)
-    }
     // remove Group rule and Nomal rule
     ;[node.omGroup].concat(node.omRule).forEach(removeOneRule)
   }
@@ -259,30 +214,6 @@ function cssobj_plugin_post_cssom (option) {
     var parent = getParent(node)
     if (validParent(node))
       return node.omRule = addCSSRule(parent, selText, cssText, node)
-    else if (node.parentRule) {
-      // for old IE not support @media, check mediaEnabled, add child nodes
-      if (node.parentRule.mediaEnabled) {
-        if (!node.omRule) return node.omRule = addCSSRule(parent, selText, cssText, node)
-      }else if (node.omRule) {
-        node.omRule.forEach(removeOneRule)
-        delete node.omRule
-      }
-    }
-  }
-
-  var mediaStore = []
-
-  var checkMediaList = function () {
-    mediaStore.forEach(function (v) {
-      v.mediaEnabled = v.mediaTest(rootDoc)
-      walk(v)
-    })
-  }
-
-  if (window.attachEvent) {
-    window.attachEvent('onresize', checkMediaList)
-  } else if (window.addEventListener) {
-    window.addEventListener('resize', checkMediaList, true)
   }
 
   var walk = function (node, store) {
@@ -309,38 +240,13 @@ function cssobj_plugin_post_cssom (option) {
       // if it's not @page, @keyframes (which is not groupRule in fact)
       if (!atomGroupRule(node)) {
         var reAdd = 'omGroup' in node
-        if (node.at=='media' && option.noMedia) node.omGroup = null
-        else [''].concat(cssPrefixes).some(function (v) {
+        ;[''].concat(cssPrefixes).some(function (v) {
           return node.omGroup = addCSSRule(
             // all groupRule will be added to root sheet
             sheet,
             '@' + (v ? '-' + v.toLowerCase() + '-' : v) + node.groupText.slice(1), [], node
           ).pop() || null
         })
-
-
-        // when add media rule failed, build test function then check on window.resize
-        if (node.at == 'media' && !reAdd && !node.omGroup) {
-          // build test function from @media rule
-          var mediaTest = new Function('doc',
-            'return ' + node.groupText
-              .replace(/@media\s*/i, '')
-              .replace(/min-width:/ig, '>=')
-              .replace(/max-width:/ig, '<=')
-              .replace(/(px)?\s*\)/ig, ')')
-              .replace(/\band\b/ig, '&&')
-              .replace(/,/g, '||')
-              .replace(/\(/g, '(doc.documentElement.offsetWidth')
-          )
-
-          try {
-            // first test if it's valid function
-            var mediaEnabled = mediaTest(rootDoc)
-            node.mediaTest = mediaTest
-            node.mediaEnabled = mediaEnabled
-            mediaStore.push(node)
-          } catch(e) {}
-        }
       }
     }
 
