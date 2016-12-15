@@ -88,7 +88,7 @@ function getBodyCss (node) {
   var prop = node.prop
   return Object.keys(prop).map(function (k) {
     // skip $prop, e.g. $id, $order
-    if(k.charAt(0)=='$') return ''
+    if(k[0]=='$') return ''
     for (var v, ret='', i = prop[k].length; i--;) {
       v = prop[k][i]
 
@@ -128,7 +128,7 @@ function vendorPropName( name ) {
 
   // shortcut for names that are not vendor prefixed
   // when name already have '-' as first char, don't prefix
-  if ( name in emptyStyle || name.charAt(0) == '-') return
+  if ( name in emptyStyle || name[0] == '-') return
 
   // check for vendor prefixed names
   var preName, capName = capitalize(name)
@@ -144,7 +144,7 @@ function vendorPropName( name ) {
 // inCSS false=camelcase; true=dashed
 function prefixProp (name, inCSS) {
   // $prop will skip
-  if(name.charAt(0)=='$') return ''
+  if(name[0]=='$') return ''
   // find name and cache the name for next time use
   var retName = cssProps[ name ] ||
       ( cssProps[ name ] = vendorPropName( name ) || name)
@@ -263,7 +263,7 @@ function cssobj_plugin_post_cssom (option) {
       // for old IE not support @media, check mediaEnabled, add child nodes
       if (node.parentRule.mediaEnabled) {
         if (!node.omRule) return node.omRule = addCSSRule(parent, selText, cssText, node)
-      }else if (node.omRule) {
+      } else if (node.omRule) {
         node.omRule.forEach(removeOneRule)
         delete node.omRule
       }
@@ -292,7 +292,7 @@ function cssobj_plugin_post_cssom (option) {
     if (node.constructor === Array) return node.map(function (v) {walk(v, store)})
 
     // skip $key node
-    if(node.key && node.key.charAt(0)=='$' || !node.prop) return
+    if(node.key && node.key[0]=='$' || !node.prop) return
 
     // nested media rule will pending proceed
     if(node.at=='media' && node.selParent && node.selParent.postArr) {
