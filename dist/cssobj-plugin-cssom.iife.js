@@ -1,6 +1,6 @@
-// version: '3.0.1'
-// commitHash: 946b920b3d9511d3ea3a51041610b6cf37465b36
-// time: Sun Mar 26 2017 22:34:29 GMT+0800 (HKT)
+// version: '3.0.2'
+// commitHash: 1d8ba43f3225fcc47da6b51c33b725b5678ee255
+// time: Sun Mar 26 2017 22:57:02 GMT+0800 (HKT)
 
 
 
