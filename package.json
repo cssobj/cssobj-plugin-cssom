@@ -3,7 +3,7 @@
   "version": "3.0.1",
   "description": "Generate and patch style sheet into CSSOM for cssobj-core",
   "main": "dist/cssobj-plugin-cssom.cjs.js",
-  "browser": "dist/cssobj-plugin-cssom.iife.js",
+  "browser": "dist/cssobj-plugin-cssom.umd.js",
   "jsnext:main": "dist/cssobj-plugin-cssom.es.js",
   "scripts": {
     "test": "npm run build && mocha",
