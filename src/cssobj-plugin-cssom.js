@@ -93,7 +93,7 @@ function getBodyCss (node) {
       v = prop[k][i]
 
       // value expand & merge should be done as value function/plugin in cssobj-core >=0.5.0
-      ret += node.inline ? k : dashify(prefixProp(k, true)) + ':' + v + ';'
+      ret += node.inline ? k : prefixProp(k, true) + ':' + v + ';'
     }
     return ret
   })
@@ -149,8 +149,8 @@ function prefixProp (name, inCSS) {
   var retName = cssProps[ name ] ||
       ( cssProps[ name ] = vendorPropName( name ) || name)
   return inCSS   // if hasPrefix in prop
-      ? cssPrefixesReg.test(retName) ? capitalize(retName) : name=='float' && name || retName  // fix float in CSS, avoid return cssFloat
-      : retName
+    ? dashify(cssPrefixesReg.test(retName) ? capitalize(retName) : name=='float' && name || retName)  // fix float in CSS, avoid return cssFloat
+  : retName
 }
 
 /**

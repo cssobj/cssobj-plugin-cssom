@@ -1,6 +1,6 @@
-// version: '3.0.0'
-// commitHash: 23445070d1843c35fdcbaf4b4dbe21989859dca5
-// time: Thu Dec 15 2016 13:58:38 GMT+0800 (HKT)
+// version: '3.0.1'
+// commitHash: 946b920b3d9511d3ea3a51041610b6cf37465b36
+// time: Sun Mar 26 2017 22:34:29 GMT+0800 (HKT)
 
 
 
@@ -12,9 +12,7 @@ var cssobj_plugin_cssom = (function () {
 // check n is numeric, or string of numeric
 
 
-function own(o, k) {
-  return {}.hasOwnProperty.call(o, k)
-}
+
 
 // set default option (not deeply)
 
@@ -47,11 +45,7 @@ var random = (function () {
 
 
 // ensure obj[k] as array, then push v into it
-function arrayKV (obj, k, v, reverse, unique) {
-  obj[k] = k in obj ? [].concat(obj[k]) : [];
-  if(unique && obj[k].indexOf(v)>-1) return
-  reverse ? obj[k].unshift(v) : obj[k].push(v);
-}
+
 
 // replace find in str, with rep function result
 
@@ -59,7 +53,13 @@ function arrayKV (obj, k, v, reverse, unique) {
 // get parents array from node (when it's passed the test)
 
 
-// split selector etc. aware of css attributes
+// split selector with comma, aware of css attributes
+
+
+// split selector with splitter, aware of css attributes
+
+
+// split char aware of syntax
 
 
 // checking for valid css value
@@ -157,7 +157,7 @@ function getBodyCss (node) {
       v = prop[k][i];
 
       // value expand & merge should be done as value function/plugin in cssobj-core >=0.5.0
-      ret += node.inline ? k : dashify(prefixProp(k, true)) + ':' + v + ';';
+      ret += node.inline ? k : prefixProp(k, true) + ':' + v + ';';
     }
     return ret
   })
@@ -213,8 +213,8 @@ function prefixProp (name, inCSS) {
   var retName = cssProps[ name ] ||
       ( cssProps[ name ] = vendorPropName( name ) || name);
   return inCSS   // if hasPrefix in prop
-      ? cssPrefixesReg.test(retName) ? capitalize(retName) : name=='float' && name || retName  // fix float in CSS, avoid return cssFloat
-      : retName
+    ? dashify(cssPrefixesReg.test(retName) ? capitalize(retName) : name=='float' && name || retName)  // fix float in CSS, avoid return cssFloat
+  : retName
 }
 
 /**
