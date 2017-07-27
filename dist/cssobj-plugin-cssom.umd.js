@@ -1,13 +1,13 @@
 // version: '3.0.2'
-// commitHash: 1d8ba43f3225fcc47da6b51c33b725b5678ee255
-// time: Sun Mar 26 2017 22:57:02 GMT+0800 (HKT)
+// commitHash: 19def4f38edf4dd18aa96f6c7d55471ce714db32
+// time: Thu Jul 27 2017 09:53:45 GMT+0800 (CST)
 
 
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  (global.cssobj_plugin_cssom = factory());
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.cssobj_plugin_cssom = factory());
 }(this, (function () { 'use strict';
 
 // helper functions for cssobj
@@ -369,8 +369,9 @@ function cssobj_plugin_post_cssom (option) {
     if (isGroup) {
       // if it's not @page, @keyframes (which is not groupRule in fact)
       if (!atomGroupRule(node)) {
+        var $mediaTest = node.obj.$mediaTest;
         var reAdd = 'omGroup' in node;
-        if (node.at=='media' && option.noMedia) node.omGroup = null;
+        if (node.at=='media' && (option.noMedia||$mediaTest)) node.omGroup = null;
         else [''].concat(cssPrefixes).some(function (v) {
           return node.omGroup = addCSSRule(
             // all groupRule will be added to root sheet
@@ -383,7 +384,7 @@ function cssobj_plugin_post_cssom (option) {
         // when add media rule failed, build test function then check on window.resize
         if (node.at == 'media' && !reAdd && !node.omGroup) {
           // build test function from @media rule
-          var mediaTest = new Function('doc',
+          var mediaTest = $mediaTest || new Function('doc',
             'return ' + node.groupText
               .replace(/@media\s*/i, '')
               .replace(/min-width:/ig, '>=')
@@ -440,6 +441,7 @@ function cssobj_plugin_post_cssom (option) {
 
   return {
     post: function (result) {
+      checkMediaList();
       result.cssdom = dom;
       if (!result.diff) {
         // it's first time render

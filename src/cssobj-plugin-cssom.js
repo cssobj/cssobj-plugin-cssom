@@ -308,8 +308,9 @@ function cssobj_plugin_post_cssom (option) {
     if (isGroup) {
       // if it's not @page, @keyframes (which is not groupRule in fact)
       if (!atomGroupRule(node)) {
+        var $mediaTest = node.obj.$mediaTest
         var reAdd = 'omGroup' in node
-        if (node.at=='media' && option.noMedia) node.omGroup = null
+        if (node.at=='media' && (option.noMedia||$mediaTest)) node.omGroup = null
         else [''].concat(cssPrefixes).some(function (v) {
           return node.omGroup = addCSSRule(
             // all groupRule will be added to root sheet
@@ -322,7 +323,7 @@ function cssobj_plugin_post_cssom (option) {
         // when add media rule failed, build test function then check on window.resize
         if (node.at == 'media' && !reAdd && !node.omGroup) {
           // build test function from @media rule
-          var mediaTest = new Function('doc',
+          var mediaTest = $mediaTest || new Function('doc',
             'return ' + node.groupText
               .replace(/@media\s*/i, '')
               .replace(/min-width:/ig, '>=')
@@ -379,6 +380,7 @@ function cssobj_plugin_post_cssom (option) {
 
   return {
     post: function (result) {
+      checkMediaList()
       result.cssdom = dom
       if (!result.diff) {
         // it's first time render
