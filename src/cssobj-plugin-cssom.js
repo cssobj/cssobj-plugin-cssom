@@ -1,6 +1,6 @@
 // plugin for cssobj
 
-import { dashify, random, capitalize } from '../../cssobj-helper/lib/cssobj-helper.js'
+import { dashify, arrayKV, random, capitalize } from '../../cssobj-helper/lib/cssobj-helper.js'
 
 function createDOM (rootDoc, id, option) {
   var el = rootDoc.getElementById(id)
@@ -220,6 +220,10 @@ function cssobj_plugin_post_cssom (option) {
 
   var removeOneRule = function (rule) {
     if (!rule) return
+    
+    // clean up _groupNode to free mem
+    delete rule._groupNode
+
     var parent = rule.parentRule || sheet
     var rules = parent.cssRules || parent.rules
     var removeFunc = function (v, i) {
@@ -262,7 +266,14 @@ function cssobj_plugin_post_cssom (option) {
     else if (node.parentRule) {
       // for old IE not support @media, check mediaEnabled, add child nodes
       if (node.parentRule.mediaEnabled) {
-        if (!node.omRule) return node.omRule = addCSSRule(parent, selText, cssText, node)
+        if (!node.omRule) {
+          var omRule = node.omRule = addCSSRule(parent, selText, cssText, node)
+          // track _groupNode to be clean up
+          omRule.forEach(function(v){
+            v._groupNode = node.parentRule
+          })
+          return omRule
+        }
       } else if (node.omRule) {
         node.omRule.forEach(removeOneRule)
         delete node.omRule
@@ -308,31 +319,35 @@ function cssobj_plugin_post_cssom (option) {
     if (isGroup) {
       // if it's not @page, @keyframes (which is not groupRule in fact)
       if (!atomGroupRule(node)) {
-        var $mediaTest = node.obj.$mediaTest
-        var reAdd = 'omGroup' in node
-        if (node.at=='media' && (option.noMedia||$mediaTest)) node.omGroup = null
-        else [''].concat(cssPrefixes).some(function (v) {
-          return node.omGroup = addCSSRule(
-            // all groupRule will be added to root sheet
-            sheet,
-            '@' + (v ? '-' + v.toLowerCase() + '-' : v) + node.groupText.slice(1), [], node
-          ).pop() || null
-        })
-
+        var $testGroup = node.obj.$testGroup
+        var presetMedia = node.at=='media' && option.media
+        var old = 'omGroup' in node
+        if ($testGroup || presetMedia) {
 
         // when add media rule failed, build test function then check on window.resize
-        if (node.at == 'media' && !reAdd && !node.omGroup) {
+        if (!old && !node.omGroup) {
           // build test function from @media rule
-          var mediaTest = $mediaTest || new Function('doc',
-            'return ' + node.groupText
-              .replace(/@media\s*/i, '')
-              .replace(/min-width:/ig, '>=')
-              .replace(/max-width:/ig, '<=')
-              .replace(/(px)?\s*\)/ig, ')')
-              .replace(/\band\b/ig, '&&')
-              .replace(/,/g, '||')
-              .replace(/\(/g, '(doc.documentElement.offsetWidth')
-          )
+
+          // var defaultTest = (new Function('doc',
+          //   'return ' + node.groupText
+          //     .replace(/@media\s*/i, '')
+          //     .replace(/min-width:/ig, '>=')
+          //     .replace(/max-width:/ig, '<=')
+          //     .replace(/(px)?\s*\)/ig, ')')
+          //     .replace(/\band\b/ig, '&&')
+          //     .replace(/,/g, '||')
+          //     .replace(/\(/g, '(doc.documentElement.offsetWidth')
+          // ))
+
+          node.omGroup = null
+
+          var mediaTest = $testGroup 
+          || (presetMedia && function(doc) {
+              return option.media ? node.selPart.some(function(part){
+                return part.trim() == option.media
+              }) : true
+            })
+          || function(){return true}
 
           try {
             // first test if it's valid function
@@ -342,6 +357,30 @@ function cssobj_plugin_post_cssom (option) {
             mediaStore.push(node)
           } catch(e) {}
         }
+
+        } else {
+          
+          // clear root sheets rules which should within this group node
+          var rules = sheet.cssRules || sheet.rules
+          for(var i=0;i<rules.length; i++){
+            var theRule = rules[i]
+            if(theRule._groupNode==node) {
+              removeOneRule(theRule)
+            }
+          }
+
+          // clear up exists group rule
+          if(node.omGroup) removeOneRule(node.omGroup)
+          
+          [''].concat(cssPrefixes).some(function (v) {
+            return node.omGroup = addCSSRule(
+              // all groupRule will be added to root sheet
+              sheet,
+              '@' + (v ? '-' + v.toLowerCase() + '-' : v) + node.groupText.slice(1), [], node
+            ).pop() || null
+          })
+        }
+
       }
     }
 
