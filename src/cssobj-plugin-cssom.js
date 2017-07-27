@@ -322,20 +322,21 @@ function cssobj_plugin_post_cssom (option) {
     if (isGroup) {
       // if it's not @page, @keyframes (which is not groupRule in fact)
       if (!atomGroupRule(node)) {
-        var $testGroup = node.obj.$testGroup
+        var $groupTest = node.obj.$groupTest
         var presetMedia = node.at=='media' && option.media
         var old = 'omGroup' in node
-        if ($testGroup || presetMedia) {
-          // console.log('start test media', presetMedia, $testGroup)
+        if ($groupTest || presetMedia) {
+          // console.log('start test media', presetMedia, $groupTest)
           node.omGroup = null
         // when add media rule failed, build test function then check on window.resize
         // if (!old) {
           // build test function from @media rule
 
-          var mediaTest = $testGroup 
+          var mediaTest = $groupTest 
           || (presetMedia && function(doc) {
-              return option.media ? node.selPart.some(function(part){
-                return part.trim() == option.media
+              var media = option.media
+              return media ? node.selPart.some(function(part){
+                return new RegExp(media, 'i').test(part.trim())
               }) : true
             })
           || function(){return true}

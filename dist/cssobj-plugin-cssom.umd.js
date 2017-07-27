@@ -1,6 +1,6 @@
-// version: '3.0.2'
-// commitHash: 19def4f38edf4dd18aa96f6c7d55471ce714db32
-// time: Thu Jul 27 2017 09:53:45 GMT+0800 (CST)
+// version: '4.0.0'
+// commitHash: d7f505abd6e375cc6d90e5e4a061fd21d47c2e3e
+// time: Thu Jul 27 2017 17:04:42 GMT+0800 (CST)
 
 
 
@@ -285,15 +285,27 @@ function cssobj_plugin_post_cssom (option) {
     return !node.parentRule || node.parentRule.omGroup !== null
   };
 
+  var removeRule = function(parent, rule, index) {
+    return parent.deleteRule
+        ? parent.deleteRule(rule.keyText || index)
+        : parent.removeRule(index)
+  };
+
+  var clearRoot = function (root) {
+    var rules = root.cssRules || root.rules;
+    // console.log('clearRoot', sheet, rules)
+    for(var i=rules.length; i--;){
+      removeRule(root, rules[i], i);
+      // console.log('clear rule', i, rules[i])
+    }
+  };
   var removeOneRule = function (rule) {
     if (!rule) return
     var parent = rule.parentRule || sheet;
     var rules = parent.cssRules || parent.rules;
     var removeFunc = function (v, i) {
       if((v===rule)) {
-        parent.deleteRule
-          ? parent.deleteRule(rule.keyText || i)
-          : parent.removeRule(i);
+        removeRule(parent, rule, i);
         return true
       }
     };[].some.call(rules, removeFunc);
@@ -318,12 +330,14 @@ function cssobj_plugin_post_cssom (option) {
     if(!cssText) return
     // get parent to add
     var parent = getParent(node);
+    var parentRule = node.parentRule;
     if (validParent(node))
       return node.omRule = addCSSRule(parent, selText, cssText, node)
-    else if (node.parentRule) {
+    else if (parentRule) {
       // for old IE not support @media, check mediaEnabled, add child nodes
-      if (node.parentRule.mediaEnabled) {
-        if (!node.omRule) return node.omRule = addCSSRule(parent, selText, cssText, node)
+      if (parentRule.mediaEnabled) {
+        [].concat(node.omRule).forEach(removeOneRule);
+        return node.omRule = addCSSRule(parent, selText, cssText, node)
       } else if (node.omRule) {
         node.omRule.forEach(removeOneRule);
         delete node.omRule;
@@ -369,31 +383,24 @@ function cssobj_plugin_post_cssom (option) {
     if (isGroup) {
       // if it's not @page, @keyframes (which is not groupRule in fact)
       if (!atomGroupRule(node)) {
-        var $mediaTest = node.obj.$mediaTest;
-        var reAdd = 'omGroup' in node;
-        if (node.at=='media' && (option.noMedia||$mediaTest)) node.omGroup = null;
-        else [''].concat(cssPrefixes).some(function (v) {
-          return node.omGroup = addCSSRule(
-            // all groupRule will be added to root sheet
-            sheet,
-            '@' + (v ? '-' + v.toLowerCase() + '-' : v) + node.groupText.slice(1), [], node
-          ).pop() || null
-        });
-
-
+        var $groupTest = node.obj.$groupTest;
+        var presetMedia = node.at=='media' && option.media;
+        var old = 'omGroup' in node;
+        if ($groupTest || presetMedia) {
+          // console.log('start test media', presetMedia, $groupTest)
+          node.omGroup = null;
         // when add media rule failed, build test function then check on window.resize
-        if (node.at == 'media' && !reAdd && !node.omGroup) {
+        // if (!old) {
           // build test function from @media rule
-          var mediaTest = $mediaTest || new Function('doc',
-            'return ' + node.groupText
-              .replace(/@media\s*/i, '')
-              .replace(/min-width:/ig, '>=')
-              .replace(/max-width:/ig, '<=')
-              .replace(/(px)?\s*\)/ig, ')')
-              .replace(/\band\b/ig, '&&')
-              .replace(/,/g, '||')
-              .replace(/\(/g, '(doc.documentElement.offsetWidth')
-          );
+
+          var mediaTest = $groupTest 
+          || (presetMedia && function(doc) {
+              var media = option.media;
+              return media ? node.selPart.some(function(part){
+                return new RegExp(media, 'i').test(part.trim())
+              }) : true
+            })
+          || function(){return true};
 
           try {
             // first test if it's valid function
@@ -402,7 +409,19 @@ function cssobj_plugin_post_cssom (option) {
             node.mediaEnabled = mediaEnabled;
             mediaStore.push(node);
           } catch(e) {}
+        // }
+
+        } else {
+          
+          [''].concat(cssPrefixes).some(function (v) {
+            return node.omGroup = addCSSRule(
+              // all groupRule will be added to root sheet
+              sheet,
+              '@' + (v ? '-' + v.toLowerCase() + '-' : v) + node.groupText.slice(1), [], node
+            ).pop() || null
+          });
         }
+
       }
     }
 
@@ -439,12 +458,21 @@ function cssobj_plugin_post_cssom (option) {
     });
   };
 
+  var prevMedia = option.media;
   return {
     post: function (result) {
+      var mediaChanged = prevMedia!=option.media;
+      prevMedia = option.media;
       checkMediaList();
       result.cssdom = dom;
-      if (!result.diff) {
+      if (!result.diff || mediaChanged) {
         // it's first time render
+        if(mediaChanged) {
+          // if media changed, reinit, clear all rules
+          // console.log('clearRoot', prevMedia, option.media)
+          mediaStore = [];
+          clearRoot(sheet);
+        }
         walk(result.root);
       } else {
         // it's not first time, patch the diff result to CSSOM
