@@ -218,19 +218,27 @@ function cssobj_plugin_post_cssom (option) {
     return !node.parentRule || node.parentRule.omGroup !== null
   }
 
+  var removeRule = function(parent, rule, index) {
+    return parent.deleteRule
+        ? parent.deleteRule(rule.keyText || index)
+        : parent.removeRule(index)
+  }
+
+  var clearRoot = function (root) {
+    var rules = root.cssRules || root.rules
+    // console.log('clearRoot', sheet, rules)
+    for(var i=rules.length; i--;){
+      removeRule(root, rules[i], i)
+      // console.log('clear rule', i, rules[i])
+    }
+  }
   var removeOneRule = function (rule) {
     if (!rule) return
-    
-    // clean up _groupNode to free mem
-    delete rule._groupNode
-
     var parent = rule.parentRule || sheet
     var rules = parent.cssRules || parent.rules
     var removeFunc = function (v, i) {
       if((v===rule)) {
-        parent.deleteRule
-          ? parent.deleteRule(rule.keyText || i)
-          : parent.removeRule(i)
+        removeRule(parent, rule, i)
         return true
       }
     }
@@ -261,19 +269,14 @@ function cssobj_plugin_post_cssom (option) {
     if(!cssText) return
     // get parent to add
     var parent = getParent(node)
+    var parentRule = node.parentRule
     if (validParent(node))
       return node.omRule = addCSSRule(parent, selText, cssText, node)
-    else if (node.parentRule) {
+    else if (parentRule) {
       // for old IE not support @media, check mediaEnabled, add child nodes
-      if (node.parentRule.mediaEnabled) {
-        if (!node.omRule) {
-          var omRule = node.omRule = addCSSRule(parent, selText, cssText, node)
-          // track _groupNode to be clean up
-          omRule.forEach(function(v){
-            v._groupNode = node.parentRule
-          })
-          return omRule
-        }
+      if (parentRule.mediaEnabled) {
+        [].concat(node.omRule).forEach(removeOneRule)
+        return node.omRule = addCSSRule(parent, selText, cssText, node)
       } else if (node.omRule) {
         node.omRule.forEach(removeOneRule)
         delete node.omRule
@@ -323,23 +326,11 @@ function cssobj_plugin_post_cssom (option) {
         var presetMedia = node.at=='media' && option.media
         var old = 'omGroup' in node
         if ($testGroup || presetMedia) {
-
-        // when add media rule failed, build test function then check on window.resize
-        if (!old && !node.omGroup) {
-          // build test function from @media rule
-
-          // var defaultTest = (new Function('doc',
-          //   'return ' + node.groupText
-          //     .replace(/@media\s*/i, '')
-          //     .replace(/min-width:/ig, '>=')
-          //     .replace(/max-width:/ig, '<=')
-          //     .replace(/(px)?\s*\)/ig, ')')
-          //     .replace(/\band\b/ig, '&&')
-          //     .replace(/,/g, '||')
-          //     .replace(/\(/g, '(doc.documentElement.offsetWidth')
-          // ))
-
+          // console.log('start test media', presetMedia, $testGroup)
           node.omGroup = null
+        // when add media rule failed, build test function then check on window.resize
+        // if (!old) {
+          // build test function from @media rule
 
           var mediaTest = $testGroup 
           || (presetMedia && function(doc) {
@@ -356,21 +347,9 @@ function cssobj_plugin_post_cssom (option) {
             node.mediaEnabled = mediaEnabled
             mediaStore.push(node)
           } catch(e) {}
-        }
+        // }
 
         } else {
-          
-          // clear root sheets rules which should within this group node
-          var rules = sheet.cssRules || sheet.rules
-          for(var i=0;i<rules.length; i++){
-            var theRule = rules[i]
-            if(theRule._groupNode==node) {
-              removeOneRule(theRule)
-            }
-          }
-
-          // clear up exists group rule
-          if(node.omGroup) removeOneRule(node.omGroup)
           
           [''].concat(cssPrefixes).some(function (v) {
             return node.omGroup = addCSSRule(
@@ -417,12 +396,21 @@ function cssobj_plugin_post_cssom (option) {
     })
   }
 
+  var prevMedia = option.media
   return {
     post: function (result) {
+      var mediaChanged = prevMedia!=option.media
+      prevMedia = option.media
       checkMediaList()
       result.cssdom = dom
-      if (!result.diff) {
+      if (!result.diff || mediaChanged) {
         // it's first time render
+        if(mediaChanged) {
+          // if media changed, reinit, clear all rules
+          // console.log('clearRoot', prevMedia, option.media)
+          mediaStore = []
+          clearRoot(sheet)
+        }
         walk(result.root)
       } else {
         // it's not first time, patch the diff result to CSSOM
