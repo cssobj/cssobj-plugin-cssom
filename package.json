@@ -23,8 +23,8 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-bump": "^2.2.0",
-    "rollup-plugin-replace": "^1.1.1"
+    "gulp": "*",
+    "gulp-bump": "*",
+    "rollup-plugin-replace": "*"
   }
 }
