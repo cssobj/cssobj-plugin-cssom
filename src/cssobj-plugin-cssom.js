@@ -1,6 +1,6 @@
 // plugin for cssobj
 
-import { dashify, arrayKV, random, capitalize } from '../../cssobj-helper/lib/cssobj-helper.js'
+import { dashify, arrayKV, random, capitalize, objGetObj, isString } from '../../cssobj-helper/lib/cssobj-helper.js'
 
 function createDOM (rootDoc, id, option) {
   var el = rootDoc.getElementById(id)
@@ -403,6 +403,20 @@ function cssobj_plugin_post_cssom (option) {
       var mediaChanged = prevMedia!=option.media
       prevMedia = option.media
       checkMediaList()
+
+      result.set = function(path, newObj){
+        if(!Array.isArray(path)) return
+        var srcObj = result.obj
+        if(isString(path[0]) && path[0][0]==='$') {
+          srcObj = result.ref[path.shift().slice(1)].obj
+        }
+        var ret = objGetObj( srcObj, path )
+        if(ret.ok){
+          Object.assign(ret.obj, newObj)
+        }
+        result.update()
+      }
+
       result.cssdom = dom
       if (!result.diff || mediaChanged) {
         // it's first time render

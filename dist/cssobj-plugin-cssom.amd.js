@@ -1,6 +1,6 @@
-// version: '4.0.0'
-// commitHash: d7f505abd6e375cc6d90e5e4a061fd21d47c2e3e
-// time: Thu Jul 27 2017 17:04:42 GMT+0800 (CST)
+// version: '4.1.0'
+// commitHash: 7da7f1a0e7b53aed84a407493b60e661e04b61ab
+// time: Fri Mar 16 2018 13:10:13 GMT+0800 (CST)
 
 
 
@@ -10,6 +10,10 @@ define(function () { 'use strict';
 
 // check n is numeric, or string of numeric
 
+
+function isPrimitive(val) {
+  return val == null || (typeof val !== 'function' && typeof val !== 'object')
+}
 
 
 
@@ -39,6 +43,46 @@ var random = (function () {
     return '_' + (prefix||'') + Math.floor(Math.random() * Math.pow(2, 32)).toString(36) + count + '_'
   }
 })();
+
+function isString(value) {
+  return typeof value === 'string'
+}
+
+// console.log(isEmpty([]), isEmpty(), isEmpty(null), isEmpty(''), isEmpty({}), isEmpty(23))
+
+// set object path value, any Primitive/Non-exists will be set to {}
+
+// var obj={a:{b:{c:1}}};
+// objSet(obj, {} ,{x:1});
+// objSet(obj,'a.b.c.d.e',{x:1});
+// objSet(obj,'a.f.d.s'.split('.'), {y:1});
+// console.log(JSON.stringify(obj))
+
+
+// return object path with only object type
+function objGetObj(obj, _key) {
+  var key = Array.isArray(_key) ? _key : String(_key).split('.');
+  var p, n, ok=1;
+  var ret = {ok:ok, path:key, obj:obj};
+  for(p=0; p<key.length; p++) {
+    n = key[p];
+    if(!obj.hasOwnProperty(n) || isPrimitive(obj[n])) {
+      ok = 0;
+      break
+    }
+    obj = obj[n];
+  }
+  ret.ok= ok;
+  ret.path = key.slice(0,p);
+  ret.obj=obj;
+  return ret
+}
+// var obj={a:{b:{c:1}}};
+// console.log(objGetObj(obj))
+// console.log(objGetObj(obj, []))
+// console.log(objGetObj(obj, 'a'))
+// console.log(objGetObj(obj, 'a.b'))
+// console.log(objGetObj(obj, 'a.b.c.e'))
 
 // extend obj from source, if it's no key in obj, create one
 
@@ -460,6 +504,20 @@ function cssobj_plugin_post_cssom (option) {
       var mediaChanged = prevMedia!=option.media;
       prevMedia = option.media;
       checkMediaList();
+
+      result.set = function(path, newObj){
+        if(!Array.isArray(path)) return
+        var srcObj = result.obj;
+        if(isString(path[0]) && path[0][0]==='$') {
+          srcObj = result.ref[path.shift().slice(1)].obj;
+        }
+        var ret = objGetObj( srcObj, path );
+        if(ret.ok){
+          Object.assign(ret.obj, newObj);
+        }
+        result.update();
+      };
+
       result.cssdom = dom;
       if (!result.diff || mediaChanged) {
         // it's first time render
