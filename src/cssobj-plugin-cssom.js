@@ -460,7 +460,7 @@ function cssobj_plugin_post_cssom (option) {
           })
 
           diff.removed && diff.removed.forEach(function (v) {
-            var prefixV = prefixProp(v)
+            var prefixV = prefixProp(v, true)
             prefixV && om && om.forEach(function (rule) {
               try{
                 rule.style.removeProperty

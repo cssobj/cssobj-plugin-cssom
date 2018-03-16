@@ -1,6 +1,6 @@
-// version: '4.1.1'
-// commitHash: b544b55877b5d6d47dda82b20868239a114c9d37
-// time: Fri Mar 16 2018 14:39:43 GMT+0800 (CST)
+// version: '4.1.2'
+// commitHash: f9994b7f360e9e68a40278cff6596b7e2925f203
+// time: Fri Mar 16 2018 15:52:58 GMT+0800 (CST)
 
 
 
@@ -16,9 +16,9 @@ function own(o, k) {
 
 // Object.assgin polyfill
 function _assign (target, source) {
-  var from, key;
+  var s, from, key;
   var to = Object(target);
-  for (var s = 1; s < arguments.length; s++) {
+  for (s = 1; s < arguments.length; s++) {
     from = Object(arguments[s]);
     for (key in from) {
       if (own(from, key)) {
@@ -28,7 +28,7 @@ function _assign (target, source) {
   }
   return to
 }
-const assign = Object.assign || _assign;
+var assign = Object.assign || _assign;
 // console.log(assign({}, {a:1}, {a:2}, {b:3}))
 
 // convert js prop into css prop (dashified)
@@ -535,7 +535,7 @@ function cssobj_plugin_post_cssom (option) {
           });
 
           diff.removed && diff.removed.forEach(function (v) {
-            var prefixV = prefixProp(v);
+            var prefixV = prefixProp(v, true);
             prefixV && om && om.forEach(function (rule) {
               try{
                 rule.style.removeProperty
