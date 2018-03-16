@@ -1,5 +1,5 @@
 // plugin for cssobj
-
+import assign from 'object-assign'
 import { dashify, arrayKV, random, capitalize, objGetObj, isString } from '../../cssobj-helper/lib/cssobj-helper.js'
 
 function createDOM (rootDoc, id, option) {
@@ -412,7 +412,7 @@ function cssobj_plugin_post_cssom (option) {
         }
         var ret = objGetObj( srcObj, path )
         if(ret.ok){
-          Object.assign(ret.obj, newObj)
+          assign(ret.obj, newObj)
         }
         result.update()
       }

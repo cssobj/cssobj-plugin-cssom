@@ -1,6 +1,6 @@
 {
   "name": "cssobj-plugin-cssom",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "Generate and patch style sheet into CSSOM for cssobj-core",
   "main": "dist/cssobj-plugin-cssom.cjs.js",
   "browser": "dist/cssobj-plugin-cssom.umd.js",
@@ -21,10 +21,15 @@
   "homepage": "https://github.com/cssobj/cssobj-plugin-cssom#readme",
   "author": "James Yang <jamesyang999@gmail.com>",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "object-assign": "^4.1.1"
+  },
   "devDependencies": {
     "gulp": "*",
     "gulp-bump": "*",
-    "rollup-plugin-replace": "*"
+    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-node-resolve": "^3.2.0",
+    "rollup-plugin-replace": "*",
+    "rollup-plugin-strip-banner": "^0.2.0"
   }
 }

@@ -1,6 +1,8 @@
 // rollup.config.js
 import {readFileSync} from 'fs'
 import replace from 'rollup-plugin-replace'
+import commonjs from 'rollup-plugin-commonjs'
+import nodeResolve from 'rollup-plugin-node-resolve'
 
 var commitHash = (function () {
   try {
@@ -15,16 +17,20 @@ var banner = readFileSync('./src/zbanner.js', 'utf8')
     .replace('<@VERSION@>', pkg.version)
     .replace('<@TIME@>', new Date())
     .replace('<@commitHash@>', commitHash)
+var name = 'cssobj_plugin_cssom'
 
 export default {
-  entry: 'src/cssobj-plugin-cssom.js',
-  moduleName: 'cssobj_plugin_cssom',
+  input: 'src/cssobj-plugin-cssom.js',
   banner: banner,
-  targets: [
-    { format: 'iife', dest: 'dist/cssobj-plugin-cssom.iife.js' },
-    { format: 'amd',  dest: 'dist/cssobj-plugin-cssom.amd.js'  },
-    { format: 'umd',  dest: 'dist/cssobj-plugin-cssom.umd.js'  },
-    { format: 'cjs',  dest: 'dist/cssobj-plugin-cssom.cjs.js'  },
-    { format: 'es',   dest: 'dist/cssobj-plugin-cssom.es.js'   }
-  ]
+  output: [
+      { format: 'iife', file: 'dist/cssobj-plugin-cssom.iife.js', name },
+      { format: 'amd',  file: 'dist/cssobj-plugin-cssom.amd.js',name },
+      { format: 'umd',  file: 'dist/cssobj-plugin-cssom.umd.js',name  },
+      { format: 'cjs',  file: 'dist/cssobj-plugin-cssom.cjs.js'  },
+      { format: 'es',   file: 'dist/cssobj-plugin-cssom.es.js'   }
+  ],
+  plugins:[
+    nodeResolve(),
+    commonjs()
+  ],
 }

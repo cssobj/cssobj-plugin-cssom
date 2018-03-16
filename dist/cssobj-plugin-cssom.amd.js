@@ -1,24 +1,105 @@
-// version: '4.1.0'
-// commitHash: 7da7f1a0e7b53aed84a407493b60e661e04b61ab
-// time: Fri Mar 16 2018 13:10:13 GMT+0800 (CST)
+// version: '4.1.1'
+// commitHash: 70542dee25767481198d0197721d5c2e4d30aa10
+// time: Fri Mar 16 2018 14:29:03 GMT+0800 (CST)
 
 
 
 define(function () { 'use strict';
 
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+/* eslint-disable no-unused-vars */
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+function toObject(val) {
+	if (val === null || val === undefined) {
+		throw new TypeError('Object.assign cannot be called with null or undefined');
+	}
+
+	return Object(val);
+}
+
+function shouldUseNative() {
+	try {
+		if (!Object.assign) {
+			return false;
+		}
+
+		// Detect buggy property enumeration order in older V8 versions.
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
+		var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
+		test1[5] = 'de';
+		if (Object.getOwnPropertyNames(test1)[0] === '5') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test2 = {};
+		for (var i = 0; i < 10; i++) {
+			test2['_' + String.fromCharCode(i)] = i;
+		}
+		var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
+			return test2[n];
+		});
+		if (order2.join('') !== '0123456789') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test3 = {};
+		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
+			test3[letter] = letter;
+		});
+		if (Object.keys(Object.assign({}, test3)).join('') !==
+				'abcdefghijklmnopqrst') {
+			return false;
+		}
+
+		return true;
+	} catch (err) {
+		// We don't expect any of the above to throw, but better to be safe.
+		return false;
+	}
+}
+
+var _objectAssign_4_1_1_objectAssign = shouldUseNative() ? Object.assign : function (target, source) {
+	var from;
+	var to = toObject(target);
+	var symbols;
+
+	for (var s = 1; s < arguments.length; s++) {
+		from = Object(arguments[s]);
+
+		for (var key in from) {
+			if (hasOwnProperty.call(from, key)) {
+				to[key] = from[key];
+			}
+		}
+
+		if (getOwnPropertySymbols) {
+			symbols = getOwnPropertySymbols(from);
+			for (var i = 0; i < symbols.length; i++) {
+				if (propIsEnumerable.call(from, symbols[i])) {
+					to[symbols[i]] = from[symbols[i]];
+				}
+			}
+		}
+	}
+
+	return to;
+};
+
 // helper functions for cssobj
-
-// check n is numeric, or string of numeric
-
 
 function isPrimitive(val) {
   return val == null || (typeof val !== 'function' && typeof val !== 'object')
 }
-
-
-
-// set default option (not deeply)
-
 
 // convert js prop into css prop (dashified)
 function dashify(str) {
@@ -32,9 +113,6 @@ function capitalize (str) {
   return str.charAt(0).toUpperCase() + str.substr(1)
 }
 
-// repeat str for num times
-
-
 // random string, should used across all cssobj plugins
 var random = (function () {
   var count = 0;
@@ -47,11 +125,6 @@ var random = (function () {
 function isString(value) {
   return typeof value === 'string'
 }
-
-// console.log(isEmpty([]), isEmpty(), isEmpty(null), isEmpty(''), isEmpty({}), isEmpty(23))
-
-// set object path value, any Primitive/Non-exists will be set to {}
-
 // var obj={a:{b:{c:1}}};
 // objSet(obj, {} ,{x:1});
 // objSet(obj,'a.b.c.d.e',{x:1});
@@ -77,35 +150,6 @@ function objGetObj(obj, _key) {
   ret.obj=obj;
   return ret
 }
-// var obj={a:{b:{c:1}}};
-// console.log(objGetObj(obj))
-// console.log(objGetObj(obj, []))
-// console.log(objGetObj(obj, 'a'))
-// console.log(objGetObj(obj, 'a.b'))
-// console.log(objGetObj(obj, 'a.b.c.e'))
-
-// extend obj from source, if it's no key in obj, create one
-
-
-// ensure obj[k] as array, then push v into it
-
-
-// replace find in str, with rep function result
-
-
-// get parents array from node (when it's passed the test)
-
-
-// split selector with comma, aware of css attributes
-
-
-// split selector with splitter, aware of css attributes
-
-
-// split char aware of syntax
-
-
-// checking for valid css value
 
 // plugin for cssobj
 
@@ -159,11 +203,7 @@ var addCSSRule = function (parent, selector, body, node) {
         // console.log(e, selector, body, pos)
       }
     } else if (parent.addRule) {
-      // https://msdn.microsoft.com/en-us/library/hh781508(v=vs.85).aspx
-      // only supported @rule will accept: @import
-      // old IE addRule don't support 'dd,dl' form, add one by one
-      // selector normally is node.selTextPart, but have to be array type
-      [].concat(selector).forEach(function (sel) {
+[].concat(selector).forEach(function (sel) {
         try {
           // remove ALL @-rule support for old IE
           if(isImportRule) {
@@ -208,9 +248,9 @@ function getBodyCss (node) {
 
 // vendor prefix support
 // borrowed from jQuery 1.12
-var cssPrefixes = [ "Webkit", "Moz", "ms", "O" ];
+var	cssPrefixes = [ "Webkit", "Moz", "ms", "O" ];
 var cssPrefixesReg = new RegExp('^(?:' + cssPrefixes.join('|') + ')[A-Z]');
-var emptyStyle = document.createElement( "div" ).style;
+var	emptyStyle = document.createElement( "div" ).style;
 var testProp  = function (list) {
   for(var i = list.length; i--;) {
     if(list[i] in emptyStyle) return list[i]
@@ -224,7 +264,7 @@ var testProp  = function (list) {
  * 1. diff & patch properties for CSSOM
  * 2. vendorPrefix property name checking
  */
-var cssProps = {
+var	cssProps = {
   // normalize float css property
   'float': testProp(['styleFloat', 'cssFloat', 'float'])
 };
@@ -348,7 +388,13 @@ function cssobj_plugin_post_cssom (option) {
         removeRule(parent, rule, i);
         return true
       }
-    };[].some.call(rules, removeFunc);
+    }
+    // sheet.imports have bugs in IE:
+    // > sheet.removeImport(0)  it's work, then again
+    // > sheet.removeImport(0)  it's not work!!!
+    //
+    // parent.imports && [].some.call(parent.imports, removeFunc)
+    ;[].some.call(rules, removeFunc);
   };
 
   function removeNode (node) {
@@ -361,8 +407,7 @@ function cssobj_plugin_post_cssom (option) {
       walk(node);
       mediaStore.splice(groupIdx, 1);
     }
-    // remove Group rule and Nomal rule
-    [node.omGroup].concat(node.omRule).forEach(removeOneRule);
+[node.omGroup].concat(node.omRule).forEach(removeOneRule);
   }
 
   // helper function for addNormalrule
@@ -425,7 +470,6 @@ function cssobj_plugin_post_cssom (option) {
       if (!atomGroupRule(node)) {
         var $groupTest = node.obj.$groupTest;
         var presetMedia = node.at=='media' && option.media;
-        var old = 'omGroup' in node;
         if ($groupTest || presetMedia) {
           // console.log('start test media', presetMedia, $groupTest)
           node.omGroup = null;
@@ -513,7 +557,7 @@ function cssobj_plugin_post_cssom (option) {
         }
         var ret = objGetObj( srcObj, path );
         if(ret.ok){
-          Object.assign(ret.obj, newObj);
+          _objectAssign_4_1_1_objectAssign(ret.obj, newObj);
         }
         result.update();
       };
