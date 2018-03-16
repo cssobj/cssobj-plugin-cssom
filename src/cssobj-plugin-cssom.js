@@ -1,6 +1,6 @@
 // plugin for cssobj
-import assign from 'object-assign'
-import { dashify, arrayKV, random, capitalize, objGetObj, isString } from '../../cssobj-helper/lib/cssobj-helper.js'
+
+import { dashify, arrayKV, random, capitalize, objGetObj, isString, assign } from '../../cssobj-helper/lib/cssobj-helper.js'
 
 function createDOM (rootDoc, id, option) {
   var el = rootDoc.getElementById(id)

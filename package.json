@@ -22,7 +22,6 @@
   "author": "James Yang <jamesyang999@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "object-assign": "^4.1.1"
   },
   "devDependencies": {
     "gulp": "*",
