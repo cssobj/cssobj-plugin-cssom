@@ -1,6 +1,6 @@
-// version: '4.1.2'
-// commitHash: f9994b7f360e9e68a40278cff6596b7e2925f203
-// time: Fri Mar 16 2018 15:52:58 GMT+0800 (CST)
+// version: '4.1.4'
+// commitHash: 18b665ff6051ae754c0956ea1c278d0a4cda112c
+// time: Mon Mar 19 2018 10:15:43 GMT+0800 (CST)
 
 
 
@@ -479,8 +479,8 @@ function cssobj_plugin_post_cssom (option) {
       prevMedia = option.media;
       checkMediaList();
 
-      result.set = function(path, newObj){
-        if(!Array.isArray(path)) return
+      result.set = function(cssPath, newObj){
+        var path = Array.isArray(cssPath) ? cssPath : [cssPath];
         var srcObj = result.obj;
         if(isString(path[0]) && path[0][0]==='$') {
           srcObj = result.ref[path.shift().slice(1)].obj;

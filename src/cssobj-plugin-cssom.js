@@ -404,8 +404,8 @@ function cssobj_plugin_post_cssom (option) {
       prevMedia = option.media
       checkMediaList()
 
-      result.set = function(path, newObj){
-        if(!Array.isArray(path)) return
+      result.set = function(cssPath, newObj){
+        var path = Array.isArray(cssPath) ? cssPath : [cssPath]
         var srcObj = result.obj
         if(isString(path[0]) && path[0][0]==='$') {
           srcObj = result.ref[path.shift().slice(1)].obj

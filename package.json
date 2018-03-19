@@ -1,6 +1,6 @@
 {
   "name": "cssobj-plugin-cssom",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "Generate and patch style sheet into CSSOM for cssobj-core",
   "main": "dist/cssobj-plugin-cssom.cjs.js",
   "browser": "dist/cssobj-plugin-cssom.umd.js",
